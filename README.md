@@ -1,5 +1,7 @@
 # sm64ex-omm.sh
-Recreating the omm_builder.py in Shell Script, for people that want to contribute but hate python or just don't know it.
+Recreating the omm_builder.py in Shell Script, for people that want to contribute but hate Python or just don't know it.
+
+For me, I don't know Python. In fact, if I didnt know the file extension of omm_builder.py and there were no givaways to what language it was written in, i would've said it's C or something.
 
 ## Devlog
 Format: MM.DD.YY - VERSION
@@ -9,6 +11,9 @@ Format: MM.DD.YY - VERSION
 ## Bugs
   - Whatever you do, **DON'T HOLD THE MOVEMENT BUTTONS!** *Cause:* UNKNOWN
   - Don't press enter as well. *Cause:* UNKNOWN
+
+## TODO
+ - Get the build options menu working.m m m
 
 The rest of the README is just a modified version of @PeachyPeachSM64's.
 
@@ -49,7 +54,7 @@ Ok, I guess that means don't run omm_builder.py. Run omm_builder.sh instead!
 - **Windows**:
   - Download and install [MSYS2](https://www.msys2.org).
 
-  - Download the [OMM Builder Setup Script](https://github.com/0K9090/sm64ex-omm-resources/raw/master/omm_builder_setup.zip) (Link not updated yet).
+  - Download the [OMM Builder,sh Setup Script](https://raw.githubusercontent.com/0K9090/sm64ex-omm.sh/master/setup.sh).
 
   - In MSYS2, run `./setup.sh`.
 

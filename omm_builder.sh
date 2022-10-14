@@ -182,8 +182,9 @@ getinput() {
 	fi
 }
 dependcheck
-OMM_PATCH_VERSION="7.3.2" # Local version
-if ! [ "h$1" == "h-nvc" ]; then
+OMM_PATCH_VERSION="7.3.2"
+OMM_PATCH_LOCAL_VERSION="7.3.2" # Local version
+if ! [ "h$1" == "h--no-version-check" ]; then
 	if [ -f omm.version ]; then
 		rm omm.version
 	fi
@@ -206,19 +207,47 @@ if ! [ "h$1" == "h-nvc" ]; then
 		fi
 		OMM_PATCH_VERSION+=$char
 	done
+	if ! [ "$OMM_PATCH_LOCAL_VERSION" == "$OMM_PATCH_VERSION" ]; then
+		echo "Your OMM builder is not up-to-date."
+		read -sn 1 -p "Do you want to download and install the latest version? [y/n] " inp
+		if [ "h$inp" == hy ] || [ "h$inp" == hY ]; then
+			echo "Updating OMM builder..."
+			git config pull.rebase true
+			git checkout master -q
+			git pull -q
+			rm -rf custom
+			echo "Done."
+		fi
+	fi
 fi
-stty -echo
-printf '\e[8;27;120t' #resize to 27 rows and 120 cols
-echo -e "\e[?25l"
+stty -echo            # Makes it so when you type it doesn't display the characters
+printf '\e[8;27;120t' # resize to 27 rows and 120 cols
+echo -e "\e[?25l"     # Hide cursor
 clear
 screenid=1
 echologo() {
+	if [ $screenid == 2 ]; then
+		gnl=$(expr 33 - $(expr $(echo $NAME | wc -m) - 1))
+		i=0
+		sps=
+		while :; do
+			((i++))
+			if [ $i -gt $gnl ]; then
+				break
+			fi
+			sps+=" "
+		done
+	fi
 	clear
 	echo
 	echo -e "  ${COL_LYELLOW}Builder Ver   ${COL_WHITE}${OMM_BUILDER_VERSION}                            ${COL_LMAGENTA}<E>${COL_DEFAULT}  Up     ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_0}${FMT_RESET}${COL_DEFAULT}"
 	echo -e "  ${COL_LYELLOW}OMM Version   ${COL_WHITE}${OMM_PATCH_VERSION}                            ${COL_LMAGENTA}<D>${COL_DEFAULT}  Down   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_1}${FMT_RESET}${COL_DEFAULT}"
 	echo -e "  ${COL_LYELLOW}.sh Version   ${COL_WHITE}${OMM_SH_VERSION}                            ${COL_LMAGENTA}<S>${COL_DEFAULT}  Left   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_2}${FMT_RESET}${COL_DEFAULT}"
-	echo -e "                                                 ${COL_LMAGENTA}<F>${COL_DEFAULT}  Right  ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_3}${FMT_RESET}${COL_DEFAULT}"
+	if [ $screenid == 2 ]; then
+		echo -e "  ${COL_LYELLOW}Game Name     ${COL_WHITE}${NAME}${sps}${COL_LMAGENTA}<F>${COL_DEFAULT}  Right  ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_3}${FMT_RESET}${COL_DEFAULT}"
+	else
+		echo -e "                                                 ${COL_LMAGENTA}<F>${COL_DEFAULT}  Right  ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_3}${FMT_RESET}${COL_DEFAULT}"
+	fi
 	echo -e "                                                 ${COL_LMAGENTA}<C>${COL_DEFAULT}  Select ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_4}${FMT_RESET}${COL_DEFAULT}"
 	echo -e "                                                 ${COL_LMAGENTA}<X>${COL_DEFAULT}  Back   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_5}${FMT_RESET}${COL_DEFAULT}"
 	echo
@@ -226,8 +255,8 @@ echologo() {
 menu() {
 	if [ $screenid == 0 ]; then
 		clear
-		echo -e "\e[?25h"
-		stty echo
+		echo -e "\e[?25h" # Show cursor
+		stty echo         # Characters you type are displayed in the terminal again
 		exit
 	elif [ $screenid == 1 ]; then
 		echologo
