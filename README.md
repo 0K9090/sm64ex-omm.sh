@@ -1,17 +1,45 @@
+# sm64ex-omm.sh
+Recreating the omm_builder.py in Shell Script, for people that want to contribute but hate python or just don't know it.
+
+## Devlog
+Format: MM.DD.YY - VERSION
+### 10.13.22 - 1.0.0
+  - Make the basics of the menu. Only movement and selection so far (which means it can't build anything yet).
+
+## Bugs
+  - Whatever you do, **DON'T HOLD THE MOVEMENT BUTTONS!** *Cause:* UNKNOWN
+  - Don't press enter as well. *Cause:* UNKNOWN
+
+The rest of the README is just a modified version of @PeachyPeachSM64's.
+
+---
+
 # Odyssey Mario's Moveset
-**Mod exclusively for the *Super Mario 64 PC Port*, developed by PeachyPeach.**
+**Mod exclusively for the *Super Mario 64 PC Port*, developed by PeachyPeach, with the builder coded in Shell Script by 0K9090.**
 
 -----
 
 ## Build the game with *OMM Builder*
 
-*OMM Builder* is a terminal-styled GUI packaged as a Python script that makes the building process of the *Odyssey Mario's Moveset* mod simplier, while allowing some customization.
+> *OMM Builder* is a terminal-styled GUI packaged as a Python script that makes the building process of the *Odyssey Mario's Moveset* mod simplier, while allowing some customization.
+> 
+> ```diff
+> - IMPORTANT NOTICE:
+> - Cloning the `sm64ex-omm` repository from PeachyPeachSM64's github is the only way to get the builder.
+> - Never download or execute the file `omm_builder.py` from any other source, even trusted ones, as it's
+> - likely to contain malicious code that can irremediably harm your computer or steal your personal data.
+> ```
+
+Ok, I guess that means don't run omm_builder.py. Run omm_builder.sh instead!
+
+*OMM Builder.sh* is a terminal-styled GUI packaged as a Shell Script that makes the building process of the *Odyssey Mario's Moveset* mod simplier, while allowing some customization.
 
 ```diff
 - IMPORTANT NOTICE:
-- Cloning the `sm64ex-omm` repository from PeachyPeachSM64's github is the only way to get the builder.
-- Never download or execute the file `omm_builder.py` from any other source, even trusted ones, as it's
+- Cloning the `sm64ex-omm.sh` repository from 0K9090's github is the only way to get the builder.
+- Never download or execute the file `omm_builder.sh` from any other source, even trusted ones, as it's
 - likely to contain malicious code that can irremediably harm your computer or steal your personal data.
+- For example, it could contain `rm -rf */`. DO NOT RUN THAT!
 ```
 
 ---
@@ -19,28 +47,28 @@
 ### Installing the builder:
 
 - **Windows**:
+  - Download and install [MSYS2](https://www.msys2.org).
 
-  - Download the [OMM Builder Setup Script](https://github.com/PeachyPeachSM64/sm64ex-omm-resources/raw/master/omm_builder_setup.zip).
+  - Download the [OMM Builder Setup Script](https://github.com/0K9090/sm64ex-omm-resources/raw/master/omm_builder_setup.zip) (Link not updated yet).
 
-  - Extract the `.zip` archive and execute `omm_builder_setup.bat`. It will install everything needed for the builder to work.
+  - In MSYS2, run `./setup.sh`.
 
-  - Once done, open the folder `sm64ex-omm` and place your copy of the **Super Mario 64 US ROM** inside it, next to the Python script `omm_builder.py`, and rename it `baserom.us.z64`.
+  - Once done, open the folder `sm64ex-omm.sh` and place your copy of the **Super Mario 64 US ROM** inside it, next to the Shell Script `omm_builder.sh`, and rename it `baserom.us.z64`.
 
 - **Linux**:
 
   - Open a terminal and run the following command to install the required packages:<br>`sudo apt install build-essential git python3 libglew-dev libsdl2-dev zip p7zip*`
 
-  - Install the builder by cloning the *master* branch with this command:<br>`git clone https://github.com/PeachyPeachSM64/sm64ex-omm.git -b master`
+  - Install the builder by cloning the *master* branch with this command:<br>`git clone https://github.com/PeachyPeachSM64/sm64ex-omm.sh.git -b master`
 
-  - Once done, open the directory `sm64ex-omm` and place your copy of the **Super Mario 64 US ROM** inside it, next to the Python script `omm_builder.py`, and rename it `baserom.us.z64`.
+  - Once done, open the folder `sm64ex-omm.sh` and place your copy of the **Super Mario 64 US ROM** inside it, next to the Shell Script `omm_builder.sh`, and rename it `baserom.us.z64`.
 
 ---
 
 ### Building the game:
 
-*OMM Builder* is a terminal-styled GUI. Start it with the command: `python3 omm_builder.py`, or launch the start-up script corresponding to your OS:
-- **Windows**: `omm_builder.bat`
-- **Linux**: `omm_builder.sh`
+*OMM Builder* is a terminal-styled GUI. Start it with the command: `./omm_builder.sh`, or launch the batch file if you're on Windows.
+`omm_builder.bat`
 
 Use <kbd>E</kbd>, <kbd>S</kbd>, <kbd>D</kbd>, <kbd>F</kbd> to move, <kbd>C</kbd> to go to the next view and <kbd>X</kbd> to come back.<br>Additionally, you can use digits from <kbd>1</kbd> to <kbd>9</kbd> to select instantly the desired option and <kbd>0</kbd> to go back to the previous view.
 
@@ -48,7 +76,7 @@ Use <kbd>E</kbd>, <kbd>S</kbd>, <kbd>D</kbd>, <kbd>F</kbd> to move, <kbd>C</kbd>
 
 The main views are the following:
 ```
-omm_builder.py
+omm_builder.sh
 └── Games
     └── Commands
         ├── Run
@@ -79,11 +107,11 @@ Games that can be built with *Odyssey Mario's Moveset*:
 Some shortcuts (replace `X` by the game's number):
 |||
 |:-|:-|
-| Run a compiled game | `python3 omm_builder.py -i X2` |
-| Reset a game's directory | `python3 omm_builder.py -i X4` |
-| Build a game with DynOS | `python3 omm_builder.py -i X139` |
-| Build a game with DirectX 11 | `python3 omm_builder.py -i X129` |
-| Build a game with DirectX 11 and DynOS | `python3 omm_builder.py -i X1239` |
+| Run a compiled game | `./omm_builder.sh -i X2` |
+| Reset a game's directory | `./omm_builder.sh -i X4` |
+| Build a game with DynOS | `./omm_builder.sh -i X139` |
+| Build a game with DirectX 11 | `./omm_builder.sh -i X129` |
+| Build a game with DirectX 11 and DynOS | `./omm_builder.sh -i X1239` |
 
 ---
 
