@@ -54,7 +54,7 @@ Ok, I guess that means don't run omm_builder.py. Run omm_builder.sh instead!
 - **Windows**:
   - Download and install [MSYS2](https://www.msys2.org).
 
-  - Download the [OMM Builder,sh Setup Script](https://raw.githubusercontent.com/0K9090/sm64ex-omm.sh/master/setup.sh).
+  - Download the [OMM Builder.sh Setup Script](https://raw.githubusercontent.com/0K9090/sm64ex-omm.sh/master/setup.sh).
 
   - In MSYS2, run `./setup.sh`.
 
