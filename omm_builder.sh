@@ -183,9 +183,9 @@ getinput() {
 }
 dependcheck
 OMM_PATCH_VERSION="7.3.2"
-OMM_PATCH_LOCAL_VERSION="7.3.2" # Local version
+OMM_SH_LOCAL_VERSION="1.0.0" # Local version
 if ! [ "h$1" == "h--no-version-check" ]; then
-	OMM_PATCH_VERSION=""
+	OMM_SH_VERSION=""
 	if [ -f omm.version ]; then
 		rm omm.version
 	fi
@@ -206,9 +206,9 @@ if ! [ "h$1" == "h--no-version-check" ]; then
 		if [ "h$char" == "h" ]; then
 			break
 		fi
-		OMM_PATCH_VERSION+=$char
+		OMM_SH_VERSION+=$char
 	done
-	if ! [ "$OMM_PATCH_LOCAL_VERSION" == "$OMM_PATCH_VERSION" ]; then
+	if ! [ "$OMM_SH_LOCAL_VERSION" == "$OMM_SH_VERSION" ]; then
 		echo "Your OMM builder is not up-to-date."
 		read -sn 1 -p "Do you want to download and install the latest version? [y/n] " inp
 		if [ "h$inp" == hy ] || [ "h$inp" == hY ]; then
