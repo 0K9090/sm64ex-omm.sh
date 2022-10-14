@@ -113,7 +113,10 @@ menu_test() {
 		OMM_PATCH_VERSION+=$char
 	done
 	printf '\e[8;27;120t' #resize to 27 rows and 120 cols
-	echo -e "\e[?25l"
+
+clear
+screenid=1
+echologo() {
 	clear
 	echo
 	echo -e "  ${COL_LYELLOW}Builder Ver   ${COL_WHITE}${OMM_BUILDER_VERSION}                            ${COL_LMAGENTA}<E>${COL_DEFAULT}  Up     ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_0}${FMT_RESET}${COL_DEFAULT}"
