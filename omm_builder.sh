@@ -185,6 +185,7 @@ dependcheck
 OMM_PATCH_VERSION="7.3.2"
 OMM_PATCH_LOCAL_VERSION="7.3.2" # Local version
 if ! [ "h$1" == "h--no-version-check" ]; then
+	OMM_PATCH_VERSION=""
 	if [ -f omm.version ]; then
 		rm omm.version
 	fi
