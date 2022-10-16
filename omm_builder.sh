@@ -106,7 +106,18 @@ OMM_REPO_ABBR=("smex" "xalo" "smms" "sm74" "smsr" "smgs" "r96x")
 OMM_BUILD_DESCRIPTIONS_ERR=("  Compile the game with some customization." "PBE2" "PBE" "PBE" "PBE")
 OMM_BUILD_DESCRIPTIONS=("  Compile the game with some customization." "  Launch the compiled game." "  Clear the build/us_pc directory." "  Reset the game directory to its initial state, i.e. without patches applied." "Delete the game directory and all its content.")
 OMM_DEPENDS=("make" "git" "zip" "unzip" "7z" "cc" "gcc" "g++" "cpp")
-
+OMM_BUILD_SPEEDS=("Slow${BGC_LCYAN}                                                                                     " "Fast${BGC_LCYAN}                                                                                     " "Faster${BGC_LCYAN}                                                                                   " "Fastest${BGC_LCYAN}                                                                                  ")
+OMM_BUILD_SPEEDS_U=("Slow                                                                                     " "Fast                                                                                     " "Faster                                                                                   " "Fastest                                                                                  ")
+OMM_RENDER_API_S=("OpenGL 2.1${BGC_LCYAN}                                                                               " "DirectX 11${BGC_LCYAN}                                                                               ")
+OMM_RENDER_API_UNS=("OpenGL 2.1                                                                               " "DirectX 11                                                                               ")
+OMM_DYNOS_TOGGLE_S=("${BGC_LRED}Disabled${BGC_LCYAN}                                                                                 " "${BGC_LGREEN}Enabled${BGC_LCYAN}                                                                                  ")
+OMM_DYNOS_TOGGLE_UNS=("${COL_RED}Disabled                                                                                 " "${COL_GREEN}Enabled                                                                                  ")
+MENU_GAME_NAMES=("     Super Mario 64 ex-nightly        " "     Super Mario 64 ex-alo            " "     Super Mario 64 Moonshine         " "     Super Mario 74                   " "     Super Mario Star Road            " "     Super Mario 64: The Green Stars  " "     Render96                         ")
+MENU_SPEEDS=("   Slow                             " "   Fast                             " "   Faster                           " "   Fastest                          ")
+MENU_API=("    OpenGL 2.1                       " "    DirectX 11                       ")
+cd custom
+list=$(ls -1d */)
+cd ../
 dependcheck() {
 	miss=0
 	for i in {1..9}; do
@@ -157,6 +168,10 @@ getinput() {
 			if [ $selected -lt 5 ]; then
 				((selected++))
 			fi
+		elif [ $screenid == 3 ]; then
+			if [ $selected -lt 9 ]; then
+				((selected++))
+			fi
 		fi
 	elif [ $1 == x ] || [ $1 == X ]; then
 		((screenid--))
@@ -177,6 +192,190 @@ getinput() {
 			if [ $1 -lt 6 ]; then
 				selected=$1
 				((screenid++))
+			fi
+		fi
+	elif [ "h$1" == "hs" ] || [ "h$1" == "hS" ]; then
+		if [ $screenid == 3 ]; then
+			if [ $selected == 1 ]; then
+				if [ $lra -gt 1 ]; then
+					((lra--))
+					echologo
+					echo -e "${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Games (${COL_DEFAULT}${FMT_BOLD}7${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				else
+					lra=4
+					echologo
+					echo -e "${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Games (${COL_DEFAULT}${FMT_BOLD}7${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				fi
+			elif [ $selected == 2 ]; then
+				if [ $lrb -gt 1 ]; then
+					((lrb--))
+					echologo
+					echo -e "${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Games (${COL_DEFAULT}${FMT_BOLD}7${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				else
+					lrb=2
+					echologo
+					echo -e "${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Games (${COL_DEFAULT}${FMT_BOLD}7${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				fi
+			elif [ $selected == 3 ]; then
+				if [ $lrc -gt 1 ]; then
+					((lrc--))
+				fi
+			fi
+		fi
+	elif [ "h$1" == "hf" ] || [ "h$1" == "hF" ]; then
+		if [ $screenid == 3 ]; then
+			if [ $selected == 1 ]; then
+				if [ $lra -lt 4 ]; then
+					((lra++))
+					echologo
+					echo -e "${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Games (${COL_DEFAULT}${FMT_BOLD}7${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				else
+					lra=1
+					echologo
+					echo -e "${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Games (${COL_DEFAULT}${FMT_BOLD}7${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				fi
+			elif [ $selected == 2 ]; then
+				if [ $lrb -lt 2 ]; then
+					((lrb++))
+					echologo
+					echo -e "${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Games (${COL_DEFAULT}${FMT_BOLD}7${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				else
+					lrb=1
+					echologo
+					echo -e "${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Games (${COL_DEFAULT}${FMT_BOLD}7${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				fi
+			elif [ $selected == 3 ]; then
+				if [ $lrc -lt 2 ]; then
+					((lrc++))
+				fi
 			fi
 		fi
 	fi
@@ -227,30 +426,26 @@ echo -e "\e[?25l"     # Hide cursor
 clear
 screenid=1
 echologo() {
-	if [ $screenid == 2 ]; then
-		gnl=$(expr 33 - $(expr $(echo $NAME | wc -m) - 1))
-		i=0
-		sps=
-		while :; do
-			((i++))
-			if [ $i -gt $gnl ]; then
-				break
-			fi
-			sps+=" "
-		done
-	fi
 	clear
 	echo
 	echo -e "  ${COL_LYELLOW}Builder Ver   ${COL_WHITE}${OMM_BUILDER_VERSION}                            ${COL_LMAGENTA}<E>${COL_DEFAULT}  Up     ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_0}${FMT_RESET}${COL_DEFAULT}"
 	echo -e "  ${COL_LYELLOW}OMM Version   ${COL_WHITE}${OMM_PATCH_VERSION}                            ${COL_LMAGENTA}<D>${COL_DEFAULT}  Down   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_1}${FMT_RESET}${COL_DEFAULT}"
 	echo -e "  ${COL_LYELLOW}.sh Version   ${COL_WHITE}${OMM_SH_VERSION}                            ${COL_LMAGENTA}<S>${COL_DEFAULT}  Left   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_2}${FMT_RESET}${COL_DEFAULT}"
-	if [ $screenid == 2 ]; then
-		echo -e "  ${COL_LYELLOW}Game Name     ${COL_WHITE}${NAME}${sps}${COL_LMAGENTA}<F>${COL_DEFAULT}  Right  ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_3}${FMT_RESET}${COL_DEFAULT}"
+	if [ $screenid -gt 1 ]; then
+		echo -e "  ${COL_LYELLOW}Game Name${COL_WHITE}${MENU_GAME_NAMES[$(expr $selected - 1)]}${COL_LMAGENTA}<F>${COL_DEFAULT}  Right  ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_3}${FMT_RESET}${COL_DEFAULT}"
 	else
 		echo -e "                                                 ${COL_LMAGENTA}<F>${COL_DEFAULT}  Right  ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_3}${FMT_RESET}${COL_DEFAULT}"
 	fi
-	echo -e "                                                 ${COL_LMAGENTA}<C>${COL_DEFAULT}  Select ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_4}${FMT_RESET}${COL_DEFAULT}"
-	echo -e "                                                 ${COL_LMAGENTA}<X>${COL_DEFAULT}  Back   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_5}${FMT_RESET}${COL_DEFAULT}"
+	if [ $screenid == 3 ]; then
+		echo -e "  ${COL_LYELLOW}Build Speed${COL_WHITE}${MENU_SPEEDS[$(expr $lra - 1)]}${COL_LMAGENTA}<C>${COL_DEFAULT}  Select ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_4}${FMT_RESET}${COL_DEFAULT}"
+	else
+		echo -e "                                                 ${COL_LMAGENTA}<C>${COL_DEFAULT}  Select ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_4}${FMT_RESET}${COL_DEFAULT}"
+	fi
+	if [ $screenid == 3 ]; then
+		echo -e "  ${COL_LYELLOW}Render API${COL_WHITE}${MENU_API[$(expr $lrb - 1)]}${COL_LMAGENTA}<X>${COL_DEFAULT}  Back   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_5}${FMT_RESET}${COL_DEFAULT}"
+	else
+		echo -e "                                                 ${COL_LMAGENTA}<X>${COL_DEFAULT}  Back   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_5}${FMT_RESET}${COL_DEFAULT}"
+	fi
 	echo
 }
 menu() {
@@ -466,6 +661,91 @@ menu() {
 			fi
 			getinput $MENU_INPUT
 			if ! [ $screenid == 2 ]; then
+				break
+			fi
+		done
+	elif [ $screenid == 3 ]; then
+		selected=1
+		lra=1
+		lrb=1
+		lrc=1
+		echologo
+		echo
+		echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Build (${COL_DEFAULT}${FMT_BOLD}9${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		while :; do
+			if [ $selected == 1 ]; then
+				echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<1>  Build Speed          ${BGC_WHITE}${OMM_BUILD_SPEEDS[$(expr $lra - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<1>  Build Speed          ${COL_DEFAULT}${OMM_BUILD_SPEEDS_U[$(expr $lra - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			if [ $selected == 2 ]; then
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<2>  Render API           ${BGC_WHITE}${OMM_RENDER_API_S[$(expr $lrb - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<2>  Render API           ${COL_DEFAULT}${OMM_RENDER_API_UNS[$(expr $lrb - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			if [ $selected == 3 ]; then
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<3>  DynOS                ${OMM_DYNOS_TOGGLE_S[$(expr $lrc - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<3>  DynOS                ${OMM_DYNOS_TOGGLE_UNS[$(expr $lrc - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			if [ $selected == 4 ]; then
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<4>  Patches              (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<4>  Patches              (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			if [ $selected == 5 ]; then
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<5>  Texture Packs        (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<5>  Texture Packs        (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			if [ $selected == 6 ]; then
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<6>  Sound Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<6>  Sound Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			if [ $selected == 7 ]; then
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<7>  Model Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<7>  Model Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			if [ $selected == 8 ]; then
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<8>  Audio Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<8>  Audio Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			if [ $selected == 9 ]; then
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<9>  Build and Run                                                                                                 ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			else
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<9>  Build and Run                                                                                                 ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			fi
+			DESC="${OMM_BUILD_DESCRIPTIONS[$(expr $selected - 1)]}"
+			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
+			echo -e "                                                                                                                        \033[A"
+			read -sn 1 -p "${OMM_REPO_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
+			getinput $MENU_INPUT
+			if ! [ $screenid == 3 ]; then
 				break
 			fi
 		done
