@@ -115,6 +115,7 @@ OMM_DYNOS_TOGGLE_UNS=("${COL_RED}Disabled                                       
 MENU_GAME_NAMES=("     Super Mario 64 ex-nightly        " "     Super Mario 64 ex-alo            " "     Super Mario 64 Moonshine         " "     Super Mario 74                   " "     Super Mario Star Road            " "     Super Mario 64: The Green Stars  " "     Render96                         ")
 MENU_SPEEDS=("   Slow                             " "   Fast                             " "   Faster                           " "   Fastest                          ")
 MENU_API=("    OpenGL 2.1                       " "    DirectX 11                       ")
+OMM_OPTIONS_DESCRIPTIONS=("  Building process duration. The faster, the more power-consuming." "  Backend used to render the game." "  Patch the latest version of DynOS to enable Model Packs support as well as an enhanced options menu." "  Currently unavailable." "  Currently unavailable." "  Currently unavailable." "  Currently unavailable." "  Currently unavailable." "  Compile the game.")
 cd custom
 list=$(ls -1d */)
 cd ../
@@ -382,7 +383,7 @@ getinput() {
 }
 dependcheck
 OMM_PATCH_VERSION="7.3.2"
-OMM_SH_LOCAL_VERSION="1.0.0" # Local version
+OMM_SH_LOCAL_VERSION="1.0.1" # Local version
 if ! [ "h$1" == "h--no-version-check" ]; then
 	OMM_SH_VERSION=""
 	if [ -f omm.version ]; then
@@ -743,7 +744,7 @@ menu() {
 			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
 			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
 			echo -e "                                                                                                                        \033[A"
-			read -sn 1 -p "${OMM_REPO_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
+			read -sn 1 -p "${OMM_OPTIONS_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
 			getinput $MENU_INPUT
 			if ! [ $screenid == 3 ]; then
 				break
