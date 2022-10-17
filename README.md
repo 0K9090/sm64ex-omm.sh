@@ -15,7 +15,7 @@ Format: MM.DD.YY - VERSION
   - Don't press enter as well. *Cause:* UNKNOWN
 
 ## TODO
- - Get the build options menu working.m m m
+ - Get the build options menu working.
 
 The rest of the README is just a modified version of @PeachyPeachSM64's.
 
