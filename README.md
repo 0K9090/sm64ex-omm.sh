@@ -56,7 +56,7 @@ Ok, I guess that means don't run omm_builder.py. Run omm_builder.sh instead!
 - **Windows**:
   - Download and install [MSYS2](https://www.msys2.org).
 
-  - Run the setup script, which can be downloaded by clicking [this](https://github.com/0K9090/sm64ex-omm.sh/releases/download/setup/setup.zip).
+  - Download the [OMM.sh Setup Script](https://github.com/0K9090/sm64ex-omm.sh/releases/download/setup/setup.zip). After extracting it, open the directory and run ./setup.sh.
 
   - Once done, open the folder `sm64ex-omm.sh` and place your copy of the **Super Mario 64 US ROM** inside it, next to the Shell Script `omm_builder.sh`, and rename it `baserom.us.z64`.
 
