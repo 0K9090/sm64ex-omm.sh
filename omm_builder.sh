@@ -120,6 +120,11 @@ MENU_API=("    OpenGL 2.1                       " "    DirectX 11               
 OMM_OPTIONS_DESCRIPTIONS=("  Building process duration. The faster, the more power-consuming." "  Backend used to render the game." "  Patch the latest version of DynOS to enable Model Packs support as well as an enhanced options menu." "  Doesn't work yet." "  Doesn't work yet." "  Currently unavailable." "  Currently unavailable." "  Currently unavailable." "  Compile the game.")
 OMM_MAKE_SPEEDS=("" " -j$(expr $(nproc) / 2)" " -j$(nproc)" " -j")
 OMM_MAKE_RAPI=("RENDER_API=GL WINDOW_API=SDL2 AUDIO_API=SDL2 CONTROLLER_API=SDL2 GRUCODE=f3dex2e" "RENDER_API=D3D11 WINDOW_API=DXGI AUDIO_API=SDL2 CONTROLLER_API=SDL2 GRUCODE=f3dex2e")
+
+raise_error() {
+	echo -e "${COL_RED}<!> ERROR: $1"
+}
+
 dependcheck() {
 	miss=0
 	dcc=$(echo "python" | wc -m)
@@ -287,49 +292,11 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $screenid == 3 ]; then
+			elif [ $selected == 3 ]; then
 				if [ $lrc -lt 2 ]; then
 					((lrc++))
-					echologo
-					echo
-					echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Build (${COL_DEFAULT}${FMT_BOLD}9${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
 				else
 					lrc=1
-					echologo
-					echo
-					echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Build (${COL_DEFAULT}${FMT_BOLD}9${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
-					echo
 				fi
 			else
 				if [ $cant == 0 ] || [ h$cant == h ]; then
@@ -359,6 +326,12 @@ getinput() {
 								exit
 							else
 								((screenid++))
+							fi
+						elif [ $screenid == 3 ]; then
+							if [ $selected == 4 ]; then
+								if ! [ $patchcount == 0 ]; then
+									screenid=patch
+								fi
 							fi
 						else
 							((screenid++))
@@ -417,6 +390,15 @@ getinput() {
 		elif [ $screenid == 2 ]; then
 			if [ $1 -lt 6 ]; then
 				selected=$1
+				((screenid++))
+			fi
+		elif [ $screenid == 3 ]; then
+			selected=$1
+			if [ $selected == 9 ]; then
+				screenid=make
+			elif [ $selected == 4 ]; then
+				screenid=patch
+			else
 				((screenid++))
 			fi
 		fi
@@ -620,8 +602,21 @@ getcustom() {
 	if [ -f patches ]; then
 		rm patches
 	fi
-	echo >>patches "$(find *.patch)"
+	echo >>patches "$(find *.patch 2>/dev/null)"
 	patchcount=$(sed -n '$=' patches)
+	if [ $patchcount -gt 9 ]; then
+		echo -e
+	fi
+	OMM_PATCHES_LIST=$(cat patches)
+	OMM_PATCHES_ENABLED=()
+	i=0
+	while :; do
+		((i++))
+		if [ $i -gt $(sed -n '$=' patches) ]; then
+			break
+		fi
+		OMM_PATCHES_ENABLED+=("0")
+	done
 	rm patches
 	if [ -f list ]; then
 		rm list
@@ -1011,6 +1006,7 @@ menu() {
 		echo
 		echo
 		while :; do
+			cant=0
 			if [ $selected == 1 ]; then
 				echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<1>  Build Speed          ${BGC_WHITE}${OMM_BUILD_SPEEDS[$(expr $lra - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			else
@@ -1026,10 +1022,21 @@ menu() {
 			else
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<3>  DynOS                ${OMM_DYNOS_TOGGLE_UNS[$(expr $lrc - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			fi
-			if [ $selected == 4 ]; then
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<4>  Patches              0/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			patchcant=0
+			if [ $patchcount -gt 0 ]; then
+				if [ $selected == 4 ]; then
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<4>  Patches              0/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				else
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<4>  Patches              0/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				fi
 			else
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<4>  Patches              0/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				if [ $selected == 2 ]; then
+					patchcant=1
+					cant=1
+					echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${BGC_GRAY}${COL_BLACK}<4>  Patches                                                                                                       ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				else
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<4>  Patches                                                                                                       ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				fi
 			fi
 			if [ $selected == 5 ]; then
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<5>  Texture Packs        0/${tpc}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
@@ -1037,16 +1044,19 @@ menu() {
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<5>  Texture Packs        0/${tpc}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			fi
 			if [ $selected == 6 ]; then
+				cant=1
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<6>  Sound Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			else
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<6>  Sound Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			fi
 			if [ $selected == 7 ]; then
+				cant=1
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<7>  Model Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			else
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<7>  Model Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			fi
 			if [ $selected == 8 ]; then
+				cant=1
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<8>  Audio Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			else
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<8>  Audio Packs          (Currently Unavailable)                                                                  ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
@@ -1064,7 +1074,12 @@ menu() {
 			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
 			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
 			echo -e "                                                                                                                        \033[A"
-			read -sn 1 -p "${OMM_OPTIONS_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
+			if [ $patchcant == 1 ]; then
+				echo -e "${COL_RED}  There is no available element in Patches.${COL_DEFAULT}\033[A"
+				read -sn 1 MENU_INPUT
+			else
+				read -sn 1 -p "${OMM_OPTIONS_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
+			fi
 			getinput $MENU_INPUT
 			if ! [ $screenid == 3 ]; then
 				break
@@ -1078,7 +1093,7 @@ menu() {
 		fi
 		git clone --single-branch ${OMM_REPOSITORY_URL} ${OMM_PATCH_DIRNAME}
 		if ! [ -d $OMM_PATCH_DIRNAME ]; then
-			echo -e "${COL_RED}Cannot clone the git repository: ${OMM_REPOSITORY_URL}${COL_DEFAULT}"
+			echo -e "${COL_RED}<!> ERROR: Cannot clone the git repository: ${OMM_REPOSITORY_URL}${COL_DEFAULT}"
 		fi
 		freshclone=0
 		if ! [ -d repos/${ABBR} ]; then
@@ -1097,6 +1112,9 @@ menu() {
 			freshclone=1
 		fi
 		cd repos/${ABBR}
+		if [ $freshclone == 0 ]; then
+			rm -rf build
+		fi
 		git reset -q --hard ${COMMIT}
 		echo "--- Eliminating bad files..."
 		echo >>filelist "$(ls -1)"
@@ -1123,7 +1141,7 @@ menu() {
 		echo "--- Applying OMM patch..."
 		cp -rf ../../${OMM_PATCH_DIRNAME}/. .
 		if ! [ -f Makefile ]; then
-			echo -e "${COL_RED}Missing Makefile.${COL_DEFAULT}"
+			echo -e "${COL_RED}<!> ERROR: Missing Makefile.${COL_DEFAULT}"
 			echo -e "\e[?25h"
 			stty echo
 			exit
@@ -1138,8 +1156,8 @@ menu() {
 		chmod 755 -f -R ./build/us_pc/res
 		chmod 755 -f -R ./build/us_pc/dynos
 		cd build/us_pc
-		if ! [ -f sm64.us.f3dex2e.exe]; then
-			echo -e "${COL_RED}Game executable not found.${COL_DEFAULT}"
+		if ! [ -f sm64.us.f3dex2e.exe ]; then
+			echo -e "${COL_RED}<!> ERROR: Game executable not found.${COL_DEFAULT}"
 			echo -e "\e[?25h"
 			stty echo
 			exit
