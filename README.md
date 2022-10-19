@@ -5,6 +5,8 @@ For me, I don't know Python. In fact, if I didnt know the file extension of omm_
 
 ## Devlog
 Format: MM.DD.YY - VERSION
+### 10.18.22 - 1.0.2
+  - Improved building. Still can't install below stuff.
 ### 10.17.22 - 1.0.1
   - It can build and run repos. Cannot install custom textures, models, sounds, and custom patches.
 ### 10.13.22 - 1.0.0

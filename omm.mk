@@ -32,7 +32,7 @@ INC_DIRS := \
 # Version
 # -------
 
-OMM_VERSION_NUMBER := 1.0.1
+OMM_VERSION_NUMBER := 1.0.2
 OMM_VERSION_REVISION := 3
 OMM_DEVELOPER := PeachyPeach
 OMM_FLAGS := -p

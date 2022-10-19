@@ -98,7 +98,7 @@ OMM_PATCH_VERSION=""
 OMM_PATCH_REVISION=""
 OMM_PATCH_DIRNAME=""
 OMM_PATCH_TRUENAME=""
-OMM_SH_VERSION="1.0.0"
+OMM_SH_VERSION="1.0.2"
 
 OMM_REPO_DESCRIPTIONS=("  PC Port of Super Mario 64 with additional features. DynOS is available as a patch." "  Up-to-date PC Port of Super Mario 64 featuring enhancements and optimizations from HackerSM64." "  PC Port mod developed by TurnFlashed, S4ys and Fito. Features 10 new worlds and a total of 50 Moons." "  PC Port of Lugmillord's rom-hack, Super Mario 74. Features both Normal and Extreme Editions." "  PC Port of Skelux's rom-hack, Super Mario Star Road. Features the 120 main stars and 10 extra stars." "  PC Port of Kampel125's rom-hack, Super Mario 64: The Green Stars. Features 131 unique stars." "  Super Mario 64 with the look of '96 renders. Has DynOS built-in, a new audio system and playable Luigi and Wario.")
 OMM_REPO_NAMES=("Super Mario 64 ex-nightly" "Super Mario 64 ex-alo" "Super Mario 64 Moonshine" "Super Mario 74" "Super Mario Star Road" "Super Mario 64: The Green Stars" "Render96")
@@ -121,8 +121,22 @@ OMM_OPTIONS_DESCRIPTIONS=("  Building process duration. The faster, the more pow
 OMM_MAKE_SPEEDS=("" " -j$(expr $(nproc) / 2)" " -j$(nproc)" " -j")
 OMM_MAKE_RAPI=("RENDER_API=GL WINDOW_API=SDL2 AUDIO_API=SDL2 CONTROLLER_API=SDL2 GRUCODE=f3dex2e" "RENDER_API=D3D11 WINDOW_API=DXGI AUDIO_API=SDL2 CONTROLLER_API=SDL2 GRUCODE=f3dex2e")
 
+args="$@"
+
 raise_error() {
-	echo -e "${COL_RED}<!> ERROR: $1"
+	echo -e "${COL_RED}<!> ERROR: ${1}${COL_DEFAULT}"
+	echo -e "${COL_YELLOW}Press ENTER to quit.${COL_DEFAULT}"
+	while :; do # don't stop until enter pressed
+		read -s -N 1 -t 1 key
+		if ! [ "$key" == $"\e" ]; then
+			if [ "$key" == $'\x0a' ]; then
+				break
+			fi
+		fi
+	done
+	echo -e "\e[?25h\033[A"
+	stty echo
+	exit
 }
 
 dependcheck() {
@@ -145,6 +159,10 @@ dependcheck() {
 		miss=1
 		echo "Python not found."
 	fi
+	py_ver="$(echo $py_ver | tr -d '.')"
+	if ! [ $py_ver -lt 3900 ]; then
+		raise_error "Python v3.9 or later is required."
+	fi
 	for i in {1..9}; do
 		cdc="${OMM_DEPENDS[$(expr $i - 1)]}"
 		echo -e "Checking dependency: '$cdc'... \033[A"
@@ -158,33 +176,16 @@ dependcheck() {
 		fi
 	done
 	if [ $miss == 1 ]; then
-		echo "Found missing dependencies. Installing now..."
-		pacman -Syu --needed --noconfirm zip unzip p7zip make git mingw-w64-i686-gcc mingw-w64-x86_64-gcc mingw-w64-i686-glew mingw-w64-x86_64-glew mingw-w64-i686-SDL2 mingw-w64-i686-SDL mingw-w64-x86_64-SDL2 mingw-w64-x86_64-SDL python3
-		miss=0
-		for i in {1..9}; do
-			cdc="${OMM_DEPENDS[$(expr $i - 1)]}"
-			echo -e "Checking dependency: '$cdc'... \033[A"
-			dcc=$(echo "$cdc" | wc -m)
-			check=$(whereis "$cdc" | wc -m)
-			if ! [ "$check" == "$(expr $dcc + 1)" ]; then
-				echo -e "Checking dependency: '$cdc'... ${COL_GREEN}OK${COL_DEFAULT}"
-			else
-				miss=1
-				echo -e "Checking dependency: '$cdc'... ${COL_RED}MISSING${COL_DEFAULT}"
-			fi
-		done
-		if [ $miss == 1 ]; then
-			echo -e "${COL_RED}ERROR: FAILED TO INSTALL NEEDED DEPENDENCIES.${COL_DEFAULT}"
-		fi
+		raise_error "Missing dependency. To fix it:\n[Windows] Download and run the 'OMM Builder Setup Script'.\n[Linux] Run the command 'sudo apt install build-essential git python3 libglew-dev libsdl2-dev zip p7zip*'."
 	fi
 }
 
 getinput() {
-	if [ $1 == e ] || [ $1 == E ]; then
+	if [[ "${OMM_BUILDER_GUI_KEY_UP}" == *"$1"* ]]; then
 		if [ $selected -gt 1 ]; then
 			((selected--))
 		fi
-	elif [ $1 == d ] || [ $1 == D ]; then
+	elif [[ "${OMM_BUILDER_GUI_KEY_DOWN}" == *"$1"* ]]; then
 		if [ $screenid == 1 ]; then
 			if [ $selected -lt 7 ]; then
 				((selected++))
@@ -198,9 +199,13 @@ getinput() {
 				((selected++))
 			fi
 		fi
-	elif [ $1 == x ] || [ $1 == X ]; then
-		((screenid--))
-	elif [ $1 == c ] || [ $1 == C ]; then
+	elif [[ "${OMM_BUILDER_GUI_KEY_BACK}" == *"$1"* ]]; then
+		if [ "$screenid" == "patch" ]; then
+			screenid=3
+		else
+			((screenid--))
+		fi
+	elif [[ "${OMM_BUILDER_GUI_KEY_ENTER}" == *"$1"* ]]; then
 		if [ $screenid == 3 ]; then
 			if [ $selected == 9 ]; then
 				screenid=make
@@ -310,7 +315,7 @@ getinput() {
 					clear
 					echo "--- Starting ${NAME}..."
 					./sm64.us.f3dex2e.exe
-					echo -e "\e[?25h"
+					echo -e "\e[?25h\033[A"
 					stty echo
 					exit # when done, exit
 				else
@@ -321,9 +326,11 @@ getinput() {
 								echo "--- Deleting ${NAME}..."
 								rm -rf repos/${ABBR}
 								echo "Done."
-								echo -e "\e[?25h"
+								echo -e "\e[?25h\033[A"
 								stty echo
 								exit
+							elif [ $selected == 3 ]; then
+								screenid="clear"
 							else
 								((screenid++))
 							fi
@@ -346,9 +353,11 @@ getinput() {
 							echo "--- Deleting ${NAME}..."
 							rm -rf repos/${ABBR}
 							echo "Done."
-							echo -e "\e[?25h"
+							echo -e "\e[?25h\033[A"
 							stty echo
 							exit
+						elif [ $selected == 3 ]; then
+							screenid="clear"
 						else
 							((screenid++))
 						fi
@@ -365,7 +374,7 @@ getinput() {
 						echo "--- Deleting ${NAME}..."
 						rm -rf repos/${ABBR}
 						echo "Done."
-						echo -e "\e[?25h"
+						echo -e "\e[?25h\033[A"
 						stty echo
 						exit
 					else
@@ -377,11 +386,11 @@ getinput() {
 			fi
 		fi
 	elif [ $screenid == 0 ]; then
-		echo -e "\e[?25h"
+		echo -e "\e[?25h\033[A"
 		stty echo
 		clear
 		exit
-	elif [ $1 == 1 ] || [ $1 == 2 ] || [ $1 == 3 ] || [ $1 == 4 ] || [ $1 == 5 ] || [ $1 == 6 ] || [ $1 == 7 ] || [ $1 == 8 ] || [ $1 == 9 ]; then
+	elif [[ "${OMM_BUILDER_GUI_KEY_DIGIT}" == *"$1"* ]]; then
 		if [ $screenid == 1 ]; then
 			if [ $1 -lt 8 ]; then
 				selected=$1
@@ -402,7 +411,7 @@ getinput() {
 				((screenid++))
 			fi
 		fi
-	elif [ "h$1" == "hs" ] || [ "h$1" == "hS" ]; then
+	elif [[ "${OMM_BUILDER_GUI_KEY_LEFT}" == *"$1"* ]]; then
 		if [ $screenid == 3 ]; then
 			if [ $selected == 1 ]; then
 				if [ $lra -gt 1 ]; then
@@ -498,7 +507,7 @@ getinput() {
 				fi
 			fi
 		fi
-	elif [ "h$1" == "hf" ] || [ "h$1" == "hF" ]; then
+	elif [[ "${OMM_BUILDER_GUI_KEY_RIGHT}" == *"$1"* ]]; then
 		if [ $screenid == 3 ]; then
 			if [ $selected == 1 ]; then
 				if [ $lra -lt 4 ]; then
@@ -646,8 +655,9 @@ getcustom() {
 echo -e "\e[?25l\033[A" # Hide cursor
 dependcheck
 OMM_PATCH_VERSION="7.3.2"
-OMM_SH_LOCAL_VERSION="1.0.1" # Local version
-if ! [ "h$1" == "h--no-version-check" ]; then
+OMM_SH_LOCAL_VERSION="1.0.2" # Local version
+OMM_PATCH_DIRNAME="omm.7.3.2.3"
+if ! [[ "$args" == *"--no-version-check"* ]]; then
 	echo "--- Checking OMM.sh version..."
 	OMM_SH_VERSION=""
 	if [ -f omm.version ]; then
@@ -741,8 +751,8 @@ menu() {
 	cant=0
 	if [ $screenid == 0 ]; then
 		clear
-		echo -e "\e[?25h" # Show cursor
-		stty echo         # Characters you type are displayed in the terminal again
+		echo -e "\e[?25h\033[A" # Show cursor
+		stty echo               # Characters you type are displayed in the terminal again
 		exit
 	elif [ $screenid == 1 ]; then
 		echologo
@@ -983,7 +993,7 @@ menu() {
 		done
 	elif [ $screenid == 3 ]; then
 		selected=1
-		lra=1
+		lra=3
 		lrb=1
 		lrc=1
 		echologo
@@ -1087,33 +1097,47 @@ menu() {
 		done
 	elif [ "$screenid" == "make" ]; then
 		clear
-		echo "--- Getting OMM repo..."
-		if [ -d $OMM_PATCH_DIRNAME ]; then
-			rm -rf $OMM_PATCH_DIRNAME
-		fi
-		git clone --single-branch ${OMM_REPOSITORY_URL} ${OMM_PATCH_DIRNAME}
-		if ! [ -d $OMM_PATCH_DIRNAME ]; then
-			echo -e "${COL_RED}<!> ERROR: Cannot clone the git repository: ${OMM_REPOSITORY_URL}${COL_DEFAULT}"
+		echo "--- Building ${NAME}..."
+		if ! [[ "$args" == *"-l"* ]]; then
+			echo "--- Getting OMM patch..."
+			lop=0
+			if [ -d $OMM_PATCH_DIRNAME ]; then
+				lop=1
+				mv "${OMM_PATCH_DIRNAME}" dd
+			fi
+			git clone -q --single-branch ${OMM_REPOSITORY_URL} ${OMM_PATCH_DIRNAME}
+			if ! [ -d $OMM_PATCH_DIRNAME ]; then
+				if [ $lop == 1 ]; then
+					echo -e "${COL_RED}Cannot retrieve OMM patch. Using local version...${COL_DEFAULT}"
+					echo "--- Preparing local OMM patch..."
+					mv dd "${OMM_PATCH_DIRNAME}"
+				else
+					raise_error "Cannot clone the git repository: ${OMM_REPOSITORY_URL}"
+				fi
+			fi
+		else
+			echo "--- Using local OMM patch..."
 		fi
 		freshclone=0
 		if ! [ -d repos/${ABBR} ]; then
 			if ! [ -d repos ]; then
 				mkdir repos
 			fi
-			echo "--- Building ${NAME}..."
 			echo "--- Cloning ${NAME} repository..."
 			git clone --single-branch ${REPO} repos/${ABBR}
 			if ! [ -d repos/${ABBR} ]; then
-				echo -e "${COL_RED}Cannot clone the git repository: ${ABBR}${COL_DEFAULT}"
-				echo -e "\e[?25h"
-				stty echo
-				exit
+				raise_error "Cannot clone the git repository: ${ABBR}"
 			fi
 			freshclone=1
 		fi
 		cd repos/${ABBR}
 		if [ $freshclone == 0 ]; then
-			rm -rf build
+			echo "--- Resetting ${NAME}..."
+			git config pull.rebase true
+			git reset -q --hard
+			git clean -q -fdx
+			git pull -q
+			git reset -q --hard ${COMMIT}
 		fi
 		git reset -q --hard ${COMMIT}
 		echo "--- Eliminating bad files..."
@@ -1141,35 +1165,39 @@ menu() {
 		echo "--- Applying OMM patch..."
 		cp -rf ../../${OMM_PATCH_DIRNAME}/. .
 		if ! [ -f Makefile ]; then
-			echo -e "${COL_RED}<!> ERROR: Missing Makefile.${COL_DEFAULT}"
-			echo -e "\e[?25h"
-			stty echo
-			exit
+			raise_error "Missing Makefile."
 		fi
-		echo "python3 omm_patcher.py -p ${ABBR}${DYNOSARG}"
-		python3 omm_patcher.py -p ${ABBR}${DYNOSARG}
+		echo "python3 omm_patcher.py -p ${ABBR}"
+		python3 omm_patcher.py -p ${ABBR}
 		echo "--- Building game..."
 		cp -f ../../baserom.us.z64 baserom.us.z64
 		echo "make${OMM_MAKE_SPEEDS[$(expr $lra - 1)]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$(expr $lrb - 1)]}"
-		make${OMM_MAKE_SPEEDS[$(expr $lra - 1)]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$(expr $lrb - 1)]}
+		make${OMM_MAKE_SPEEDS[$(expr $lra - 1)]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$(expr $lrb - 1)]} | tee ../../${ABBR}.logs.txt
 		echo "--- Starting ${NAME}..."
 		chmod 755 -f -R ./build/us_pc/res
 		chmod 755 -f -R ./build/us_pc/dynos
 		cd build/us_pc
 		if ! [ -f sm64.us.f3dex2e.exe ]; then
-			echo -e "${COL_RED}<!> ERROR: Game executable not found.${COL_DEFAULT}"
-			echo -e "\e[?25h"
-			stty echo
-			exit
+			raise_error "Game executable not found."
 		fi
 		chmod 755 sm64.us.f3dex2e.exe
 		./sm64.us.f3dex2e.exe
-		echo -e "\e[?25h"
+		echo -e "\e[?25h\033[A"
 		stty echo
 		exit # when done, exit
+	elif [ "$screenid" == "patch" ]; then
+		echo
+	elif [ "$screenid" == "clear" ]; then
+		clear
+		echo "--- Clearing ${NAME} build directory..."
+		rm -rf repos/${ABBR}/build
+		echo "Done."
+		echo -e "\e[?25h\033[A"
+		stty echo
+		exit
 	else
 		clear
-		echo -e "\e[?25h"
+		echo -e "\e[?25h\033[A"
 		stty echo
 		exit
 	fi
