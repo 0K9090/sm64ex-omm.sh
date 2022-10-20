@@ -111,7 +111,9 @@ OMM_BUILD_SPEEDS_U=("Slow                                                       
 OMM_RENDER_API_S=("OpenGL 2.1${BGC_LCYAN}                                                                               " "DirectX 11${BGC_LCYAN}                                                                               ")
 OMM_RENDER_API_UNS=("OpenGL 2.1                                                                               " "DirectX 11                                                                               ")
 OMM_DYNOS_TOGGLE_S=("${BGC_LRED}Disabled${BGC_LCYAN}                                                                                 " "${BGC_LGREEN}Enabled${BGC_LCYAN}                                                                                  ")
+OMM_DYNOS_TOGGLE_S2=("${BGC_LRED}Disabled${BGC_LCYAN}" "${BGC_LGREEN}Enabled${BGC_LCYAN}")
 OMM_DYNOS_TOGGLE_UNS=("${COL_RED}Disabled                                                                                 " "${COL_GREEN}Enabled                                                                                  ")
+OMM_DYNOS_TOGGLE_UNS2=("${COL_RED}Disabled" "${COL_GREEN}Enabled")
 MENU_GAME_NAMES=("     Super Mario 64 ex-nightly        " "     Super Mario 64 ex-alo            " "     Super Mario 64 Moonshine         " "     Super Mario 74                   " "     Super Mario Star Road            " "     Super Mario 64: The Green Stars  " "     Render96                         ")
 GAME_REPOS=("https://github.com/sm64pc/sm64ex.git -b nightly" "https://github.com/AloXado320/sm64ex-alo.git -b master" "https://github.com/sm64pc/sm64ex.git -b nightly" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b sm74" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b smsr" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b smgs" "https://github.com/Render96/Render96ex.git -b tester")
 GAME_COMMITS=("" "b9283d080d8f82befe3917a916843cbfb1399411" "" "" "" "" "")
@@ -180,6 +182,31 @@ dependcheck() {
 	fi
 }
 
+get_exe() {
+	if [ -f sm64.us.f3dex2e.exe ]; then
+		exe_type=1
+	elif [ -f sm64.us.f3dex2e ]; then
+		exe_type=2
+	else
+		raise_error "Game executable not found."
+	fi
+}
+
+run_game() {
+	echo "--- Starting ${NAME}..."
+	get_exe
+	if [ $exe_type == 1 ]; then
+		chmod 755 sm64.us.f3dex2e.exe
+		./sm64.us.f3dex2e.exe
+	else
+		chmod 755 sm64.us.f3dex2e
+		./sm64.us.f3dex2e
+	fi
+	echo -e "\e[?25h\033[A"
+	stty echo
+	exit # when done, exit
+}
+
 getinput() {
 	if [[ "${OMM_BUILDER_GUI_KEY_UP}" == *"$1"* ]]; then
 		if [ $selected -gt 1 ]; then
@@ -196,6 +223,10 @@ getinput() {
 			fi
 		elif [ $screenid == 3 ]; then
 			if [ $selected -lt 9 ]; then
+				((selected++))
+			fi
+		elif [ "$screenid" == "patch" ]; then
+			if [ $selected -lt $patchcount ]; then
 				((selected++))
 			fi
 		fi
@@ -303,6 +334,8 @@ getinput() {
 				else
 					lrc=1
 				fi
+			elif [ $selected == 4 ]; then
+				screenid="patch"
 			else
 				if [ $cant == 0 ] || [ h$cant == h ]; then
 					((screenid++))
@@ -313,11 +346,7 @@ getinput() {
 				if [ $selected == 2 ]; then
 					cd repos/$ABBR/build/us_pc
 					clear
-					echo "--- Starting ${NAME}..."
-					./sm64.us.f3dex2e.exe
-					echo -e "\e[?25h\033[A"
-					stty echo
-					exit # when done, exit
+					run_game
 				else
 					if [ $cant == 0 ] || [ h$cant == h ]; then
 						if [ $screenid == 2 ]; then
@@ -331,6 +360,8 @@ getinput() {
 								exit
 							elif [ $selected == 3 ]; then
 								screenid="clear"
+							elif [ $selected == 4 ]; then
+								screenid="reset"
 							else
 								((screenid++))
 							fi
@@ -358,6 +389,8 @@ getinput() {
 							exit
 						elif [ $selected == 3 ]; then
 							screenid="clear"
+						elif [ $selected == 4 ]; then
+							screenid="reset"
 						else
 							((screenid++))
 						fi
@@ -506,6 +539,10 @@ getinput() {
 					((lrc--))
 				fi
 			fi
+		elif [ $screenid == patch ]; then
+			if [ ${OMM_PATCHES_ENABLED[$(expr $selected - 1)]} -gt 1 ]; then
+				echo
+			fi
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_RIGHT}" == *"$1"* ]]; then
 		if [ $screenid == 3 ]; then
@@ -613,10 +650,19 @@ getcustom() {
 	fi
 	echo >>patches "$(find *.patch 2>/dev/null)"
 	patchcount=$(sed -n '$=' patches)
-	if [ $patchcount -gt 9 ]; then
-		echo -e
+	if [ $patchcount -gt 15 ]; then
+		rm patches
+		raise_error "Amount of patches in the custom directory is limited to 15 so far. Please remove some."
 	fi
-	OMM_PATCHES_LIST=$(cat patches)
+	OMM_PATCHES_LIST=()
+	i=0
+	while :; do
+		((i++))
+		if [ $i -gt $(sed -n '$=' patches) ]; then
+			break
+		fi
+		OMM_PATCHES_LIST+=("$(sed $i'!d' patches)")
+	done
 	OMM_PATCHES_ENABLED=()
 	i=0
 	while :; do
@@ -650,12 +696,96 @@ getcustom() {
 	done
 	rm list
 	cd ../
+	i=0 # start generating the patches menu
+	lc=0
+	while :; do
+		((i++))
+		if [ $i -gt $patchcount ]; then
+			break
+		fi
+		charcount=$(expr $(echo ${OMM_PATCHES_LIST[$(expr $i - 1)]} | wc -m) - 1)
+		if [ $charcount -gt $lc ]; then
+			lc=$charcount
+		fi
+	done
+	lines=" ${COL_LCYAN}${FMT_BOLD}| ${BGC_LCYAN}     "
+	lineus=" ${COL_LCYAN}${FMT_BOLD}|      "
+	i=0
+	while :; do
+		((i++))
+		if [ $i -gt $lc ]; then
+			break
+		fi
+		lines+=" "
+		lineus+=" "
+	done
+	lines+="        ${FMT_RESET}${COL_BLACK}${OMM_DYNOS_TOGGLE_S2[${OMM_PATCHES_ENABLED[$(expr $i - 1)]}]}"
+	lineus+="        ${FMT_RESET}${OMM_DYNOS_TOGGLE_UNS2[${OMM_PATCHES_ENABLED[$(expr $i - 1)]}]}"
+	real=$(echo -e "$lines")
+	lc="$(expr 118 - $(expr ${#real} - 36))"
+	lc2="$lc"
+	i=0
+	while :; do
+		((i++))
+		if [ $i -gt $lc ]; then
+			break
+		fi
+		lines+=" "
+	done
+	i=0
+	while :; do
+		((i++))
+		if [ $i -gt $lc2 ]; then
+			break
+		fi
+		lineus+=" "
+	done
+	lines+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
+	lineus+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
+	selected=0
+	parr=()
+	while :; do
+		((selected++))
+		if [ $selected -gt $patchcount ]; then
+			break
+		fi
+		i=0
+		pte=
+		while :; do
+			((i++))
+			if [ $i -gt $patchcount ]; then
+				break
+			fi
+			if ! [ $i == 1 ]; then
+				pte+="\n"
+			else
+				pte+="\033[16A\r"
+			fi
+			if [ $selected == $i ]; then
+				pte+="${lines}\033[2C"
+				pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			else
+				pte+="${lineus}\033[2C"
+				pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			fi
+		done
+		j="$(expr 16 - $i)"
+		i=0
+		while :; do
+			((i++))
+			if [ $i -gt $j ]; then
+				break
+			fi
+			pte+="\n ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+		done
+		parr+=("${pte}")
+	done
 }
 
 echo -e "\e[?25l\033[A" # Hide cursor
 dependcheck
 OMM_PATCH_VERSION="7.3.2"
-OMM_SH_LOCAL_VERSION="1.0.2" # Local version
+OMM_SH_LOCAL_VERSION="1.0.3" # Local version
 OMM_PATCH_DIRNAME="omm.7.3.2.3"
 if ! [[ "$args" == *"--no-version-check"* ]]; then
 	echo "--- Checking OMM.sh version..."
@@ -730,10 +860,10 @@ echologo() {
 	e1="                                                 "
 	e2="                                                 "
 	e3="                                                 "
-	if [ $screenid -gt 1 ]; then
+	if [ $screenid -gt 1 ] || [ "$screenid" == "patch" ]; then
 		e1="  ${COL_LYELLOW}Game Name${COL_WHITE}${MENU_GAME_NAMES[$(expr $NAMEN - 1)]}"
 	fi
-	if [ $screenid == 3 ]; then
+	if [ $screenid == 3 ] || [ "$screenid" == "patch" ]; then
 		e2="  ${COL_LYELLOW}Build Speed${COL_WHITE}${MENU_SPEEDS[$(expr $lra - 1)]}"
 		e3="  ${COL_LYELLOW}Render API${COL_WHITE}${MENU_API[$(expr $lrb - 1)]}"
 	fi
@@ -878,7 +1008,7 @@ menu() {
 			else
 				if [ $selected == 1 ]; then
 					cant=1
-					echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${BGC_GRAY}${COL_BLACK}<1>  Build                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<1>  Build                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				else
 					echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<1>  Build                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
@@ -886,9 +1016,9 @@ menu() {
 			if [ $rerr == 1 ]; then
 				if [ $selected == 2 ]; then
 					cant=1
-					echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${BGC_GRAY}${COL_BLACK}<2>  Run                                                                                                           ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<2>  Run                                                                                                           ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				else
-					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<2>  Run                                                                                                           ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${COL_GRAY}<2>  Run                                                                                                           ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
 			else
 				if [ $err == 0 ]; then
@@ -899,7 +1029,7 @@ menu() {
 					fi
 				else
 					if [ $selected == 2 ]; then
-						echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${BGC_GRAY}${COL_BLACK}<2>  Run                                                                                                           ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+						echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<2>  Run                                                                                                           ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 					else
 						echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<2>  Run                                                                                                           ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 					fi
@@ -925,19 +1055,19 @@ menu() {
 			else
 				if [ $selected == 3 ]; then
 					cant=1
-					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_GRAY}${COL_BLACK}<3>  Clear                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<3>  Clear                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				else
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<3>  Clear                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
 				if [ $selected == 4 ]; then
 					cant=1
-					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_GRAY}${COL_BLACK}<4>  Reset                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<4>  Reset                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				else
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<4>  Reset                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
 				if [ $selected == 5 ]; then
 					cant=1
-					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_GRAY}${COL_BLACK}<5>  Delete                                                                                                        ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<5>  Delete                                                                                                        ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				else
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<5>  Delete                                                                                                        ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
@@ -1043,7 +1173,7 @@ menu() {
 				if [ $selected == 2 ]; then
 					patchcant=1
 					cant=1
-					echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${BGC_GRAY}${COL_BLACK}<4>  Patches                                                                                                       ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<4>  Patches                                                                                                       ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				else
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<4>  Patches                                                                                                       ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
@@ -1100,23 +1230,16 @@ menu() {
 		echo "--- Building ${NAME}..."
 		if ! [[ "$args" == *"-l"* ]]; then
 			echo "--- Getting OMM patch..."
-			lop=0
-			if [ -d $OMM_PATCH_DIRNAME ]; then
-				lop=1
-				mv "${OMM_PATCH_DIRNAME}" dd
-			fi
+			rm -rf "${OMM_PATCH_DIRNAME}"
 			git clone -q --single-branch ${OMM_REPOSITORY_URL} ${OMM_PATCH_DIRNAME}
 			if ! [ -d $OMM_PATCH_DIRNAME ]; then
-				if [ $lop == 1 ]; then
-					echo -e "${COL_RED}Cannot retrieve OMM patch. Using local version...${COL_DEFAULT}"
-					echo "--- Preparing local OMM patch..."
-					mv dd "${OMM_PATCH_DIRNAME}"
-				else
-					raise_error "Cannot clone the git repository: ${OMM_REPOSITORY_URL}"
-				fi
+				raise_error "Cannot clone the git repository: ${OMM_REPOSITORY_URL}"
 			fi
 		else
 			echo "--- Using local OMM patch..."
+			if ! [ -d ${OMM_PATCH_DIRNAME} ]; then
+				raise_error "No OMM patch available."
+			fi
 		fi
 		freshclone=0
 		if ! [ -d repos/${ABBR} ]; then
@@ -1173,20 +1296,40 @@ menu() {
 		cp -f ../../baserom.us.z64 baserom.us.z64
 		echo "make${OMM_MAKE_SPEEDS[$(expr $lra - 1)]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$(expr $lrb - 1)]}"
 		make${OMM_MAKE_SPEEDS[$(expr $lra - 1)]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$(expr $lrb - 1)]} | tee ../../${ABBR}.logs.txt
-		echo "--- Starting ${NAME}..."
 		chmod 755 -f -R ./build/us_pc/res
 		chmod 755 -f -R ./build/us_pc/dynos
 		cd build/us_pc
-		if ! [ -f sm64.us.f3dex2e.exe ]; then
-			raise_error "Game executable not found."
-		fi
-		chmod 755 sm64.us.f3dex2e.exe
-		./sm64.us.f3dex2e.exe
-		echo -e "\e[?25h\033[A"
-		stty echo
-		exit # when done, exit
+		run_game
 	elif [ "$screenid" == "patch" ]; then
+		echologo
+		echo -e "${COL_LCYAN}${FMT_BOLD} +---------------------------------------------------${FMT_RESET}${COL_LCYAN} Patches (${COL_DEFAULT}${FMT_BOLD}${patchcount}${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}----------------------------------------------------+${FMT_RESET}"
 		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		echo
+		selected=1
+		while :; do
+			echo -e "${parr[$(expr $selected - 1)]}"
+			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
+			echo -e "\033[A"
+			read -sn 1 MENU_INPUT
+			getinput $MENU_INPUT
+			if ! [ $screenid == patch ]; then
+				break
+			fi
+		done
 	elif [ "$screenid" == "clear" ]; then
 		clear
 		echo "--- Clearing ${NAME} build directory..."
@@ -1195,6 +1338,14 @@ menu() {
 		echo -e "\e[?25h\033[A"
 		stty echo
 		exit
+	elif [ "$screenid" == "reset" ]; then
+		echo "--- Resetting ${NAME}..."
+		git config pull.rebase true
+		git reset -q --hard
+		git clean -q -fdx
+		git pull -q
+		git reset -q --hard ${COMMIT}
+		echo "Done."
 	else
 		clear
 		echo -e "\e[?25h\033[A"
