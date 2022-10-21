@@ -98,7 +98,7 @@ OMM_PATCH_VERSION=""
 OMM_PATCH_REVISION=""
 OMM_PATCH_DIRNAME=""
 OMM_PATCH_TRUENAME=""
-OMM_SH_VERSION="1.0.2"
+OMM_SH_VERSION="1.0.4"
 
 OMM_REPO_DESCRIPTIONS=("  PC Port of Super Mario 64 with additional features. DynOS is available as a patch." "  Up-to-date PC Port of Super Mario 64 featuring enhancements and optimizations from HackerSM64." "  PC Port mod developed by TurnFlashed, S4ys and Fito. Features 10 new worlds and a total of 50 Moons." "  PC Port of Lugmillord's rom-hack, Super Mario 74. Features both Normal and Extreme Editions." "  PC Port of Skelux's rom-hack, Super Mario Star Road. Features the 120 main stars and 10 extra stars." "  PC Port of Kampel125's rom-hack, Super Mario 64: The Green Stars. Features 131 unique stars." "  Super Mario 64 with the look of '96 renders. Has DynOS built-in, a new audio system and playable Luigi and Wario.")
 OMM_REPO_NAMES=("Super Mario 64 ex-nightly" "Super Mario 64 ex-alo" "Super Mario 64 Moonshine" "Super Mario 74" "Super Mario Star Road" "Super Mario 64: The Green Stars" "Render96")
@@ -399,6 +399,12 @@ getinput() {
 					fi
 				fi
 			fi
+		elif [ $screenid == patch ]; then
+			if [ ${OMM_PATCHES_ENABLED[$(expr $selected - 1)]} == 0 ]; then
+				OMM_PATCHES_ENABLED[$(expr $selected - 1)]="1"
+			else
+				OMM_PATCHES_ENABLED[$(expr $selected - 1)]="0"
+			fi
 		else
 			if [ $cant == 0 ] || [ h$cant == h ]; then
 				if [ $screenid == 2 ]; then
@@ -435,13 +441,109 @@ getinput() {
 				((screenid++))
 			fi
 		elif [ $screenid == 3 ]; then
-			selected=$1
-			if [ $selected == 9 ]; then
-				screenid=make
-			elif [ $selected == 4 ]; then
-				screenid=patch
+			if [ $1 == 1 ]; then
+				if [ $lra -lt 4 ]; then
+					((lra++))
+					echologo
+					echo
+					echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Build (${COL_DEFAULT}${FMT_BOLD}9${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				else
+					lra=1
+					echologo
+					echo
+					echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Build (${COL_DEFAULT}${FMT_BOLD}9${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				fi
+			elif [ $1 == 2 ]; then
+				if [ $lrb -lt 2 ]; then
+					((lrb++))
+					echologo
+					echo
+					echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Build (${COL_DEFAULT}${FMT_BOLD}9${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				else
+					lrb=1
+					echologo
+					echo
+					echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Build (${COL_DEFAULT}${FMT_BOLD}9${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+					echo
+				fi
+			elif [ $1 == 3 ]; then
+				if [ $lrc -lt 2 ]; then
+					((lrc++))
+				else
+					lrc=1
+				fi
 			else
-				((screenid++))
+				selected=$1
+				if [ $1 == 9 ]; then
+					screenid=make
+				elif [ $1 == 4 ]; then
+					screenid=patch
+				else
+					((screenid++))
+				fi
 			fi
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_LEFT}" == *"$1"* ]]; then
@@ -540,8 +642,8 @@ getinput() {
 				fi
 			fi
 		elif [ $screenid == patch ]; then
-			if [ ${OMM_PATCHES_ENABLED[$(expr $selected - 1)]} -gt 1 ]; then
-				echo
+			if [ ${OMM_PATCHES_ENABLED[$(expr $selected - 1)]} == 1 ]; then
+				OMM_PATCHES_ENABLED[$(expr $selected - 1)]="0"
 			fi
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_RIGHT}" == *"$1"* ]]; then
@@ -639,6 +741,10 @@ getinput() {
 					((lrc++))
 				fi
 			fi
+		elif [ $screenid == patch ]; then
+			if [ ${OMM_PATCHES_ENABLED[$(expr $selected - 1)]} == 0 ]; then
+				OMM_PATCHES_ENABLED[$(expr $selected - 1)]="1"
+			fi
 		fi
 	fi
 }
@@ -719,8 +825,8 @@ getcustom() {
 		lines+=" "
 		lineus+=" "
 	done
-	lines+="        ${FMT_RESET}${COL_BLACK}${OMM_DYNOS_TOGGLE_S2[${OMM_PATCHES_ENABLED[$(expr $i - 1)]}]}"
-	lineus+="        ${FMT_RESET}${OMM_DYNOS_TOGGLE_UNS2[${OMM_PATCHES_ENABLED[$(expr $i - 1)]}]}"
+	lines+="        ${FMT_RESET}${COL_BLACK}${OMM_DYNOS_TOGGLE_S2[0]}"
+	lineus+="        ${FMT_RESET}${OMM_DYNOS_TOGGLE_UNS2[0]}"
 	real=$(echo -e "$lines")
 	lc="$(expr 118 - $(expr ${#real} - 36))"
 	lc2="$lc"
@@ -750,25 +856,27 @@ getcustom() {
 			break
 		fi
 		i=0
-		pte=
+
 		while :; do
 			((i++))
 			if [ $i -gt $patchcount ]; then
 				break
 			fi
-			if ! [ $i == 1 ]; then
-				pte+="\n"
-			else
+			pte=
+			pte2=
+			if [ $i == 1 ]; then
 				pte+="\033[16A\r"
+				pte2+="\033[16A\r"
 			fi
-			if [ $selected == $i ]; then
-				pte+="${lines}\033[2C"
-				pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
-			else
-				pte+="${lineus}\033[2C"
-				pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
-			fi
+			pte+="${lines}\033[2C"
+			pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			parrs+=("${pte}")
+			pte2+="${lineus}\033[2C"
+			pte2+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			parrus+=("${pte2}")
 		done
+		pomle=
+		pte=
 		j="$(expr 16 - $i)"
 		i=0
 		while :; do
@@ -778,14 +886,99 @@ getcustom() {
 			fi
 			pte+="\n ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
 		done
-		parr+=("${pte}")
+		pomle="${pte}"
+	done
+	i=0
+	lc=0
+	while :; do
+		((i++))
+		if [ $i -gt $patchcount ]; then
+			break
+		fi
+		charcount=$(expr $(echo ${OMM_PATCHES_LIST[$(expr $i - 1)]} | wc -m) - 1)
+		if [ $charcount -gt $lc ]; then
+			lc=$charcount
+		fi
+	done
+	lines=" ${COL_LCYAN}${FMT_BOLD}| ${BGC_LCYAN}     "
+	lineus=" ${COL_LCYAN}${FMT_BOLD}|      "
+	i=0
+	while :; do
+		((i++))
+		if [ $i -gt $lc ]; then
+			break
+		fi
+		lines+=" "
+		lineus+=" "
+	done
+	lines+="        ${FMT_RESET}${COL_BLACK}${OMM_DYNOS_TOGGLE_S2[1]}"
+	lineus+="        ${FMT_RESET}${OMM_DYNOS_TOGGLE_UNS2[1]}"
+	real=$(echo -e "$lines")
+	lc="$(expr 118 - $(expr ${#real} - 36))"
+	lc2="$lc"
+	i=0
+	while :; do
+		((i++))
+		if [ $i -gt $lc ]; then
+			break
+		fi
+		lines+=" "
+	done
+	i=0
+	while :; do
+		((i++))
+		if [ $i -gt $lc2 ]; then
+			break
+		fi
+		lineus+=" "
+	done
+	lines+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
+	lineus+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
+	selected=0
+	parrte=()
+	while :; do
+		((selected++))
+		if [ $selected -gt $patchcount ]; then
+			break
+		fi
+		i=0
+		while :; do
+			((i++))
+			if [ $i -gt $patchcount ]; then
+				break
+			fi
+			pte=
+			pte2=
+			if [ $i == 1 ]; then
+				pte+="\033[16A\r"
+				pte2+="\033[16A\r"
+			fi
+			pte+="${lines}\033[2C"
+			pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			parrtes+=("${pte}")
+			pte2+="${lineus}\033[2C"
+			pte2+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			parrteus+=("${pte2}")
+		done
+		pomle=
+		pte=
+		j="$(expr 16 - $i)"
+		i=0
+		while :; do
+			((i++))
+			if [ $i -gt $j ]; then
+				break
+			fi
+			pte+="\n ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+		done
+		pomle="${pte}"
 	done
 }
 
 echo -e "\e[?25l\033[A" # Hide cursor
 dependcheck
 OMM_PATCH_VERSION="7.3.2"
-OMM_SH_LOCAL_VERSION="1.0.3" # Local version
+OMM_SH_LOCAL_VERSION="1.0.4" # Local version
 OMM_PATCH_DIRNAME="omm.7.3.2.3"
 if ! [[ "$args" == *"--no-version-check"* ]]; then
 	echo "--- Checking OMM.sh version..."
@@ -860,7 +1053,7 @@ echologo() {
 	e1="                                                 "
 	e2="                                                 "
 	e3="                                                 "
-	if [ $screenid -gt 1 ] || [ "$screenid" == "patch" ]; then
+	if ! [ $screenid == 1 ]; then
 		e1="  ${COL_LYELLOW}Game Name${COL_WHITE}${MENU_GAME_NAMES[$(expr $NAMEN - 1)]}"
 	fi
 	if [ $screenid == 3 ] || [ "$screenid" == "patch" ]; then
@@ -965,7 +1158,7 @@ menu() {
 		selected=1
 		echologo
 		echo
-		echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Commands (${COL_DEFAULT}${FMT_BOLD}5${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}---------------------------------------------------+${FMT_RESET}"
+		echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Commands (${COL_DEFAULT}${FMT_BOLD}5${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}--------------------------------------------------+${FMT_RESET}"
 		echo
 		echo
 		echo
@@ -1122,6 +1315,19 @@ menu() {
 			fi
 		done
 	elif [ $screenid == 3 ]; then
+		j="${#OMM_PATCHES_ENABLED[@]}"
+		i=0
+		enabled=0
+		while :; do
+			((i++))
+			if [ $i -gt $j ]; then
+				break
+			fi
+			item="${OMM_PATCHES_ENABLED[$(expr $i - 1)]}"
+			if [ $item == 1 ]; then
+				((enabled++))
+			fi
+		done
 		selected=1
 		lra=3
 		lrb=1
@@ -1165,9 +1371,9 @@ menu() {
 			patchcant=0
 			if [ $patchcount -gt 0 ]; then
 				if [ $selected == 4 ]; then
-					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<4>  Patches              0/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<4>  Patches              ${enabled}/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				else
-					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<4>  Patches              0/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<4>  Patches              ${enabled}/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
 			else
 				if [ $selected == 2 ]; then
@@ -1285,6 +1491,22 @@ menu() {
 			git apply --reject --whitespace=nowarn "dynos.patch"
 			rm dynos.patch
 		fi
+		if [ $enabled -gt 0 ]; then
+			echo "--- Applying patches..."
+			i=0
+			j="${#OMM_PATCHES_ENABLED[@]}"
+			while :; do
+				((i++))
+				if [ $i -gt $j ]; then
+					break
+				fi
+				item="${OMM_PATCHES_ENABLED[$(expr $i - 1)]}"
+				patch="${OMM_PATCHES_LIST[$(expr $i - 1)]}"
+				if [ $item == 1 ]; then
+					git apply --reject --whitespace=nowarn ../../custom/${patch}
+				fi
+			done
+		fi
 		echo "--- Applying OMM patch..."
 		cp -rf ../../${OMM_PATCH_DIRNAME}/. .
 		if ! [ -f Makefile ]; then
@@ -1301,27 +1523,52 @@ menu() {
 		cd build/us_pc
 		run_game
 	elif [ "$screenid" == "patch" ]; then
-		echologo
-		echo -e "${COL_LCYAN}${FMT_BOLD} +---------------------------------------------------${FMT_RESET}${COL_LCYAN} Patches (${COL_DEFAULT}${FMT_BOLD}${patchcount}${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}----------------------------------------------------+${FMT_RESET}"
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
-		echo
 		selected=1
 		while :; do
-			echo -e "${parr[$(expr $selected - 1)]}"
+			i=0
+			buffer=
+			while :; do
+				((i++))
+				if [ $i -gt $patchcount ]; then
+					break
+				fi
+				if ! [ $i == 1 ]; then
+					buffer+="\n"
+				fi
+				if [ ${OMM_PATCHES_ENABLED[$(expr $i - 1)]} == 0 ]; then
+					if [ $selected == $i ]; then
+						buffer+="${parrs[$(expr $i - 1)]}"
+					else
+						buffer+="${parrus[$(expr $i - 1)]}"
+					fi
+				else
+					if [ $selected == $i ]; then
+						buffer+="${parrtes[$(expr $i - 1)]}"
+					else
+						buffer+="${parrteus[$(expr $i - 1)]}"
+					fi
+				fi
+			done
+			echologo
+			echo -e "${COL_LCYAN}${FMT_BOLD} +---------------------------------------------------${FMT_RESET}${COL_LCYAN} Patches (${COL_DEFAULT}${FMT_BOLD}${patchcount}${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}----------------------------------------------------+${FMT_RESET}"
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo -e "${buffer}"
+			echo -e "\033[A${pomle}"
 			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
 			echo -e "\033[A"
 			read -sn 1 MENU_INPUT

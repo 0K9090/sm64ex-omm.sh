@@ -5,6 +5,8 @@ For me, I don't know Python. In fact, if I didnt know the file extension of omm_
 
 ## Devlog
 Format: MM.DD.YY - VERSION
+### 10.21.22 - 1.0.4
+  - Can actually patch patches not. Still cannot install textures, models, and sounds, though it should be fairly easy to implement as I can reuse the patch script with some minor changes.
 ### 10.20.33 - 1.0.3
   - Can list patches. You still cannot enable/install them though.
 ### 10.18.22 - 1.0.2
@@ -15,9 +17,7 @@ Format: MM.DD.YY - VERSION
   - Make the basics of the menu. Only movement and selection so far (which means it can't build anything yet).
 
 ## Bugs
-  - Whatever you do, **DON'T HOLD THE MOVEMENT BUTTONS!** *Cause:* UNKNOWN
   - Don't press enter as well. *Cause:* UNKNOWN
-
 ## TODO
  - Get the build options menu working.
 
