@@ -1,5 +1,5 @@
 # sm64ex-omm.sh
-Recreating the omm_builder.py in Shell Script, for people that want to contribute but hate Python or just don't know it.
+Recreating the OMM Builder in Shell Script, for people that want to contribute but hate Python or just don't know it.
 
 For me, I don't know Python. In fact, if I didnt know the file extension of omm_builder.py and there were no givaways to what language it was written in, I would've said it's C or something.
 
