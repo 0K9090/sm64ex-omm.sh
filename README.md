@@ -1,7 +1,7 @@
 # sm64ex-omm.sh
 Recreating the omm_builder.py in Shell Script, for people that want to contribute but hate Python or just don't know it.
 
-For me, I don't know Python. In fact, if I didnt know the file extension of omm_builder.py and there were no givaways to what language it was written in, i would've said it's C or something.
+For me, I don't know Python. In fact, if I didnt know the file extension of omm_builder.py and there were no givaways to what language it was written in, I would've said it's C or something.
 
 ## Devlog
 Format: MM.DD.YY - VERSION
@@ -15,11 +15,11 @@ Format: MM.DD.YY - VERSION
   - It can build and run repos. Cannot install custom textures, models, sounds, and custom patches.
 ### 10.13.22 - 1.0.0
   - Make the basics of the menu. Only movement and selection so far (which means it can't build anything yet).
-
+---
 ## Bugs
-  - Don't press enter as well. *Cause:* UNKNOWN
+  - Holding a button can cause delay for your next input.
 ## TODO
- - Get the build options menu working.
+ - Get custom assets working.
 
 The rest of the README is just a modified version of @PeachyPeachSM64's.
 

@@ -49,7 +49,9 @@ BGC_LMAGENTA="\033[105m"
 BGC_LCYAN="\033[106m"
 BGC_WHITE="\033[107m"
 
+#
 # Old logo
+#
 
 OMM_BUILDER_GUI_LOGO_0="                                    _                    "
 OMM_BUILDER_GUI_LOGO_1="  ____ __    ___    __  _____      |_|_    _             "
@@ -58,7 +60,9 @@ OMM_BUILDER_GUI_LOGO_3="/ /  \ |  \/  |  \/  |  | |/ /| || | | |/   |/ _ \| '_/ 
 OMM_BUILDER_GUI_LOGO_4="\ \__/ | |  | | |  | |  | |) \| \/ | | | (] |  __/| |    "
 OMM_BUILDER_GUI_LOGO_5=" \____/|_|\/|_|_|\/|_|  |____/ \__/|_|_|\___|\___\|_|    "
 
+#
 # New logo
+#
 
 OMM_BUILDER_GUI_LOGO_0="                                          "
 OMM_BUILDER_GUI_LOGO_1="  ____ __    ___    __            _       "
@@ -66,6 +70,10 @@ OMM_BUILDER_GUI_LOGO_2=" / __ \| \  / | \  / |      _____| |      "
 OMM_BUILDER_GUI_LOGO_3="/ /  \ |  \/  |  \/  |  _  / ___/| |___   "
 OMM_BUILDER_GUI_LOGO_4="\ \__/ | |  | | |  | | / \ \___ \|  _  |  "
 OMM_BUILDER_GUI_LOGO_5=" \____/|_|\/|_|_|\/|_| \_/ /____/|_| |_|  "
+
+#
+# More definitions, some aren't used
+#
 
 OMM_BUILDER_GUI_MENU_CLOSE="0"
 OMM_BUILDER_GUI_MENU_GAMES="1"
@@ -100,12 +108,32 @@ OMM_PATCH_DIRNAME=""
 OMM_PATCH_TRUENAME=""
 OMM_SH_VERSION="1.0.4"
 
+#
+# Descriptions that you see at the bottom of the screen
+#
+
 OMM_REPO_DESCRIPTIONS=("  PC Port of Super Mario 64 with additional features. DynOS is available as a patch." "  Up-to-date PC Port of Super Mario 64 featuring enhancements and optimizations from HackerSM64." "  PC Port mod developed by TurnFlashed, S4ys and Fito. Features 10 new worlds and a total of 50 Moons." "  PC Port of Lugmillord's rom-hack, Super Mario 74. Features both Normal and Extreme Editions." "  PC Port of Skelux's rom-hack, Super Mario Star Road. Features the 120 main stars and 10 extra stars." "  PC Port of Kampel125's rom-hack, Super Mario 64: The Green Stars. Features 131 unique stars." "  Super Mario 64 with the look of '96 renders. Has DynOS built-in, a new audio system and playable Luigi and Wario.")
-OMM_REPO_NAMES=("Super Mario 64 ex-nightly" "Super Mario 64 ex-alo" "Super Mario 64 Moonshine" "Super Mario 74" "Super Mario Star Road" "Super Mario 64: The Green Stars" "Render96")
-OMM_REPO_ABBR=("smex" "xalo" "smms" "sm74" "smsr" "smgs" "r96x")
 OMM_BUILD_DESCRIPTIONS_ERR=("  Compile the game with some customization." "PBE2" "PBE" "PBE" "PBE")
 OMM_BUILD_DESCRIPTIONS=("  Compile the game with some customization." "  Launch the compiled game." "  Clear the build/us_pc directory." "  Reset the game directory to its initial state, i.e. without patches applied." "  Delete the game directory and all its content.")
+OMM_OPTIONS_DESCRIPTIONS=("  Building process duration. The faster, the more power-consuming." "  Backend used to render the game." "  Patch the latest version of DynOS to enable Model Packs support as well as an enhanced options menu." "  Doesn't work yet." "  Doesn't work yet." "  Currently unavailable." "  Currently unavailable." "  Currently unavailable." "  Compile the game.")
+
+#
+# List of the game names and directories
+#
+
+OMM_REPO_NAMES=("Super Mario 64 ex-nightly" "Super Mario 64 ex-alo" "Super Mario 64 Moonshine" "Super Mario 74" "Super Mario Star Road" "Super Mario 64: The Green Stars" "Render96")
+OMM_REPO_ABBR=("smex" "xalo" "smms" "sm74" "smsr" "smgs" "r96x")
+
+#
+# Dependencies
+#
+
 OMM_DEPENDS=("make" "git" "zip" "unzip" "7z" "cc" "gcc" "g++" "cpp")
+
+#
+# Some menu stuff
+#
+
 OMM_BUILD_SPEEDS=("Slow${BGC_LCYAN}                                                                                     " "Fast${BGC_LCYAN}                                                                                     " "Faster${BGC_LCYAN}                                                                                   " "Fastest${BGC_LCYAN}                                                                                  ")
 OMM_BUILD_SPEEDS_U=("Slow                                                                                     " "Fast                                                                                     " "Faster                                                                                   " "Fastest                                                                                  ")
 OMM_RENDER_API_S=("OpenGL 2.1${BGC_LCYAN}                                                                               " "DirectX 11${BGC_LCYAN}                                                                               ")
@@ -115,15 +143,37 @@ OMM_DYNOS_TOGGLE_S2=("${BGC_LRED}Disabled${BGC_LCYAN}" "${BGC_LGREEN}Enabled${BG
 OMM_DYNOS_TOGGLE_UNS=("${COL_RED}Disabled                                                                                 " "${COL_GREEN}Enabled                                                                                  ")
 OMM_DYNOS_TOGGLE_UNS2=("${COL_RED}Disabled" "${COL_GREEN}Enabled")
 MENU_GAME_NAMES=("     Super Mario 64 ex-nightly        " "     Super Mario 64 ex-alo            " "     Super Mario 64 Moonshine         " "     Super Mario 74                   " "     Super Mario Star Road            " "     Super Mario 64: The Green Stars  " "     Render96                         ")
+
+#
+# Repo links
+#
+
 GAME_REPOS=("https://github.com/sm64pc/sm64ex.git -b nightly" "https://github.com/AloXado320/sm64ex-alo.git -b master" "https://github.com/sm64pc/sm64ex.git -b nightly" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b sm74" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b smsr" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b smgs" "https://github.com/Render96/Render96ex.git -b tester")
+
+#
+# Some more data
+#
+
 GAME_COMMITS=("" "b9283d080d8f82befe3917a916843cbfb1399411" "" "" "" "" "")
 MENU_SPEEDS=("   Slow                             " "   Fast                             " "   Faster                           " "   Fastest                          ")
 MENU_API=("    OpenGL 2.1                       " "    DirectX 11                       ")
-OMM_OPTIONS_DESCRIPTIONS=("  Building process duration. The faster, the more power-consuming." "  Backend used to render the game." "  Patch the latest version of DynOS to enable Model Packs support as well as an enhanced options menu." "  Doesn't work yet." "  Doesn't work yet." "  Currently unavailable." "  Currently unavailable." "  Currently unavailable." "  Compile the game.")
+
+#
+# Some make flags
+#
+
 OMM_MAKE_SPEEDS=("" " -j$(expr $(nproc) / 2)" " -j$(nproc)" " -j")
 OMM_MAKE_RAPI=("RENDER_API=GL WINDOW_API=SDL2 AUDIO_API=SDL2 CONTROLLER_API=SDL2 GRUCODE=f3dex2e" "RENDER_API=D3D11 WINDOW_API=DXGI AUDIO_API=SDL2 CONTROLLER_API=SDL2 GRUCODE=f3dex2e")
 
+#
+# Arguments provided
+#
+
 args="$@"
+
+#
+# Error script
+#
 
 raise_error() {
 	echo -e "${COL_RED}<!> ERROR: ${1}${COL_DEFAULT}"
@@ -140,6 +190,10 @@ raise_error() {
 	stty echo
 	exit
 }
+
+#
+# Check for missing dependencies
+#
 
 dependcheck() {
 	miss=0
@@ -182,6 +236,10 @@ dependcheck() {
 	fi
 }
 
+#
+# Get native executable
+#
+
 get_exe() {
 	if [ -f sm64.us.f3dex2e.exe ]; then
 		exe_type=1
@@ -191,6 +249,10 @@ get_exe() {
 		raise_error "Game executable not found."
 	fi
 }
+
+#
+# Start the game
+#
 
 run_game() {
 	echo "--- Starting ${NAME}..."
@@ -206,6 +268,10 @@ run_game() {
 	stty echo
 	exit # when done, exit
 }
+
+#
+# Get the key pressed, then react accordingly
+#
 
 getinput() {
 	if [[ "${OMM_BUILDER_GUI_KEY_UP}" == *"$1"* ]]; then
@@ -749,6 +815,10 @@ getinput() {
 	fi
 }
 
+#
+# Get list of custom patches, then generate the menus for it
+#
+
 getcustom() {
 	cd custom
 	if [ -f patches ]; then
@@ -980,6 +1050,11 @@ dependcheck
 OMM_PATCH_VERSION="7.3.2"
 OMM_SH_LOCAL_VERSION="1.0.4" # Local version
 OMM_PATCH_DIRNAME="omm.7.3.2.3"
+
+#
+# Check version
+#
+
 if ! [[ "$args" == *"--no-version-check"* ]]; then
 	echo "--- Checking OMM.sh version..."
 	OMM_SH_VERSION=""
@@ -1070,6 +1145,11 @@ echologo() {
 	echo -e "${e3}${COL_LMAGENTA}<X>${COL_DEFAULT}  Back   ${COL_LYELLOW}${FMT_BOLD}${OMM_BUILDER_GUI_LOGO_5}${FMT_RESET}${COL_DEFAULT}"
 	echo
 }
+
+#
+# Menu scripts
+#
+
 menu() {
 	cant=0
 	if [ $screenid == 0 ]; then
@@ -1586,6 +1666,7 @@ menu() {
 		stty echo
 		exit
 	elif [ "$screenid" == "reset" ]; then
+		clear
 		echo "--- Resetting ${NAME}..."
 		git config pull.rebase true
 		git reset -q --hard
