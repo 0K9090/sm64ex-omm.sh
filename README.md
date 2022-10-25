@@ -5,8 +5,11 @@ For me, I don't know Python. In fact, if I didnt know the file extension of omm_
 
 ## Devlog
 Format: MM.DD.YY - VERSION
+## 10.24.22 - 1.0.5
+  - Optimizations that make the menu REALLY fast.
+  - Some other stuff
 ### 10.21.22 - 1.0.4
-  - Can actually patch patches not. Still cannot install textures, models, and sounds, though it should be fairly easy to implement as I can reuse the patch script with some minor changes.
+  - Can actually patch patches now. Still cannot install textures, models, and sounds, though it should be fairly easy to implement as I can reuse the patch script with some minor changes.
 ### 10.20.33 - 1.0.3
   - Can list patches. You still cannot enable/install them though.
 ### 10.18.22 - 1.0.2

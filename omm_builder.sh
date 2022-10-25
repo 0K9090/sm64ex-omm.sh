@@ -1,6 +1,19 @@
+#!/bin/bash
+
+#
+# Get the actual directory that omm_builder.sh is in
+#
+
+basedir=$(dirname "${0//\\//}")
+cd "$basedir" || exit
+
+#
+# Repo links
+#
+
 OMM_REPOSITORY="sm64ex-omm"
 OMM_REPOSITORY_URL="https://github.com/PeachyPeachSM64/${OMM_REPOSITORY}.git -b nightly"
-OMM_BUILDER_VERSION_URL="https://raw.githubusercontent.com/PeachyPeachSM64/${OMM_REPOSITORY}/master/omm_builder.py"
+OMM_BUILDER_VERSION_URL="https://raw.githubusercontent.com/0K9090/sm64ex-omm.sh/master/omm_builder.sh"
 OMM_VERSION_URL="https://raw.githubusercontent.com/0K9090/sm64ex-omm.sh/master/omm.mk"
 OMM_META_PATCH_URL="https://raw.githubusercontent.com/PeachyPeachSM64/${OMM_REPOSITORY}/master/patch/omm.patch"
 OMM_PATCH_URL="https://raw.githubusercontent.com/PeachyPeachSM64/sm64ex-omm-resources/main/omm.patch.bin"
@@ -8,6 +21,10 @@ DYNOS_PATCH_URL="https://raw.githubusercontent.com/PeachyPeachSM64/sm64ex-omm-re
 
 #
 # Data
+#
+
+#
+# Colors
 #
 
 FMT_RESET="\033[0m"
@@ -145,7 +162,7 @@ OMM_DYNOS_TOGGLE_UNS2=("${COL_RED}Disabled" "${COL_GREEN}Enabled")
 MENU_GAME_NAMES=("     Super Mario 64 ex-nightly        " "     Super Mario 64 ex-alo            " "     Super Mario 64 Moonshine         " "     Super Mario 74                   " "     Super Mario Star Road            " "     Super Mario 64: The Green Stars  " "     Render96                         ")
 
 #
-# Repo links
+# PC-Port Repo links
 #
 
 GAME_REPOS=("https://github.com/sm64pc/sm64ex.git -b nightly" "https://github.com/AloXado320/sm64ex-alo.git -b master" "https://github.com/sm64pc/sm64ex.git -b nightly" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b sm74" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b smsr" "https://github.com/PeachyPeachSM64/sm64ex-omm.git -b smgs" "https://github.com/Render96/Render96ex.git -b tester")
@@ -162,14 +179,14 @@ MENU_API=("    OpenGL 2.1                       " "    DirectX 11               
 # Some make flags
 #
 
-OMM_MAKE_SPEEDS=("" " -j$(expr $(nproc) / 2)" " -j$(nproc)" " -j")
+OMM_MAKE_SPEEDS=("" " -j$(($(nproc) / 2))" " -j$(nproc)" " -j")
 OMM_MAKE_RAPI=("RENDER_API=GL WINDOW_API=SDL2 AUDIO_API=SDL2 CONTROLLER_API=SDL2 GRUCODE=f3dex2e" "RENDER_API=D3D11 WINDOW_API=DXGI AUDIO_API=SDL2 CONTROLLER_API=SDL2 GRUCODE=f3dex2e")
 
 #
-# Arguments provided
+# Get arguments provided
 #
 
-args="$@"
+args="$*"
 
 #
 # Error script
@@ -179,7 +196,7 @@ raise_error() {
 	echo -e "${COL_RED}<!> ERROR: ${1}${COL_DEFAULT}"
 	echo -e "${COL_YELLOW}Press ENTER to quit.${COL_DEFAULT}"
 	while :; do # don't stop until enter pressed
-		read -s -N 1 -t 1 key
+		read -rs -N 1 -t 1 key
 		if ! [ "$key" == $"\e" ]; then
 			if [ "$key" == $'\x0a' ]; then
 				break
@@ -199,7 +216,7 @@ dependcheck() {
 	miss=0
 	dcc=$(echo "python" | wc -m)
 	check=$(whereis "python" | wc -m)
-	if ! [ "$check" == "$(expr $dcc + 1)" ]; then
+	if ! [ "$check" == "$((dcc + 1))" ]; then
 		py_verbase=$(python -V)
 		i=6
 		while :; do
@@ -215,16 +232,16 @@ dependcheck() {
 		miss=1
 		echo "Python not found."
 	fi
-	py_ver="$(echo $py_ver | tr -d '.')"
-	if ! [ $py_ver -lt 3900 ]; then
+	py_ver="$(echo "$py_ver" | tr -d '.')"
+	if ! [ "$py_ver" -lt 3900 ]; then
 		raise_error "Python v3.9 or later is required."
 	fi
 	for i in {1..9}; do
-		cdc="${OMM_DEPENDS[$(expr $i - 1)]}"
+		cdc="${OMM_DEPENDS[$((i - 1))]}"
 		echo -e "Checking dependency: '$cdc'... \033[A"
-		dcc=$(echo "$cdc" | wc -m)
+		dcc=${#cdc}
 		check=$(whereis "$cdc" | wc -m)
-		if ! [ "$check" == "$(expr $dcc + 1)" ]; then
+		if ! [ "$check" == "$((dcc + 1))" ]; then
 			echo -e "Checking dependency: '$cdc'... ${COL_GREEN}OK${COL_DEFAULT}"
 		else
 			miss=1
@@ -235,6 +252,27 @@ dependcheck() {
 		raise_error "Missing dependency. To fix it:\n[Windows] Download and run the 'OMM Builder Setup Script'.\n[Linux] Run the command 'sudo apt install build-essential git python3 libglew-dev libsdl2-dev zip p7zip*'."
 	fi
 }
+
+#
+# Check builder version
+#
+
+wget --no-check-certificate --no-cache --no-cookies ${OMM_BUILDER_VERSION_URL} -O omm_builder.version -q || rm -f omm_builder.version
+if [ -f omm_builder.version ]; then
+	if ! [ "$(cat omm_builder.sh)" == "$(cat omm_builder.version)" ]; then
+		echo "Your OMM builder is not up-to-date."
+		echo "Do you want to download and install the latest version? [y/n]"
+		read -rsn 1 yn
+		if [ "h$yn" == hy ] || [ "h$yn" == hY ]; then
+			echo "Updating OMM builder..."
+			git config pull.rebase true
+			git checkout master -q
+			git pull -q
+			echo "Done."
+		fi
+	fi
+	rm omm_builder.version
+fi
 
 #
 # Get native executable
@@ -251,7 +289,7 @@ get_exe() {
 }
 
 #
-# Start the game
+# Start the selected game
 #
 
 run_game() {
@@ -275,24 +313,24 @@ run_game() {
 
 getinput() {
 	if [[ "${OMM_BUILDER_GUI_KEY_UP}" == *"$1"* ]]; then
-		if [ $selected -gt 1 ]; then
+		if [ "$selected" -gt 1 ]; then
 			((selected--))
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_DOWN}" == *"$1"* ]]; then
-		if [ $screenid == 1 ]; then
-			if [ $selected -lt 7 ]; then
+		if [ "$screenid" == 1 ]; then
+			if [ "$selected" -lt 7 ]; then
 				((selected++))
 			fi
-		elif [ $screenid == 2 ]; then
-			if [ $selected -lt 5 ]; then
+		elif [ "$screenid" == 2 ]; then
+			if [ "$selected" -lt 5 ]; then
 				((selected++))
 			fi
-		elif [ $screenid == 3 ]; then
-			if [ $selected -lt 9 ]; then
+		elif [ "$screenid" == 3 ]; then
+			if [ "$selected" -lt 9 ]; then
 				((selected++))
 			fi
 		elif [ "$screenid" == "patch" ]; then
-			if [ $selected -lt $patchcount ]; then
+			if [ "$selected" -lt "$patchcount" ]; then
 				((selected++))
 			fi
 		fi
@@ -304,10 +342,10 @@ getinput() {
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_ENTER}" == *"$1"* ]]; then
 		if [ $screenid == 3 ]; then
-			if [ $selected == 9 ]; then
-				screenid=make
-			elif [ $selected == 1 ]; then
-				if [ $lra -lt 4 ]; then
+			if [ "$selected" == 9 ]; then
+				screenid="make"
+			elif [ "$selected" == 1 ]; then
+				if [ "$lra" -lt 4 ]; then
 					((lra++))
 					echologo
 					echo
@@ -350,8 +388,8 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $selected == 2 ]; then
-				if [ $lrb -lt 2 ]; then
+			elif [ "$selected" == 2 ]; then
+				if [ "$lrb" -lt 2 ]; then
 					((lrb++))
 					echologo
 					echo
@@ -394,47 +432,47 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $selected == 3 ]; then
-				if [ $lrc -lt 2 ]; then
+			elif [ "$selected" == 3 ]; then
+				if [ "$lrc" -lt 2 ]; then
 					((lrc++))
 				else
 					lrc=1
 				fi
-			elif [ $selected == 4 ]; then
+			elif [ "$selected" == 4 ]; then
 				screenid="patch"
 			else
-				if [ $cant == 0 ] || [ h$cant == h ]; then
+				if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
 					((screenid++))
 				fi
 			fi
-		elif [ $screenid == 2 ]; then
-			if ! [ $rerr == 1 ]; then
-				if [ $selected == 2 ]; then
-					cd repos/$ABBR/build/us_pc
+		elif [ "$screenid" == 2 ]; then
+			if ! [ "$rerr" == 1 ]; then
+				if [ "$selected" == 2 ]; then
+					cd repos/"$ABBR"/build/us_pc || exit
 					clear
 					run_game
 				else
-					if [ $cant == 0 ] || [ h$cant == h ]; then
-						if [ $screenid == 2 ]; then
-							if [ $selected == 5 ]; then
+					if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
+						if [ "$screenid" == 2 ]; then
+							if [ "$selected" == 5 ]; then
 								clear
 								echo "--- Deleting ${NAME}..."
-								rm -rf repos/${ABBR}
+								rm -rf repos/"${ABBR}"
 								echo "Done."
 								echo -e "\e[?25h\033[A"
 								stty echo
 								exit
-							elif [ $selected == 3 ]; then
+							elif [ "$selected" == 3 ]; then
 								screenid="clear"
-							elif [ $selected == 4 ]; then
+							elif [ "$selected" == 4 ]; then
 								screenid="reset"
 							else
 								((screenid++))
 							fi
-						elif [ $screenid == 3 ]; then
-							if [ $selected == 4 ]; then
-								if ! [ $patchcount == 0 ]; then
-									screenid=patch
+						elif [ "$screenid" == 3 ]; then
+							if [ "$selected" == 4 ]; then
+								if ! [ "$patchcount" == 0 ]; then
+									screenid="patch"
 								fi
 							fi
 						else
@@ -443,19 +481,19 @@ getinput() {
 					fi
 				fi
 			else
-				if [ $cant == 0 ] || [ h$cant == h ]; then
-					if [ $screenid == 2 ]; then
-						if [ $selected == 5 ]; then
+				if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
+					if [ "$screenid" == 2 ]; then
+						if [ "$selected" == 5 ]; then
 							clear
 							echo "--- Deleting ${NAME}..."
-							rm -rf repos/${ABBR}
+							rm -rf repos/"${ABBR}"
 							echo "Done."
 							echo -e "\e[?25h\033[A"
 							stty echo
 							exit
-						elif [ $selected == 3 ]; then
+						elif [ "$selected" == 3 ]; then
 							screenid="clear"
-						elif [ $selected == 4 ]; then
+						elif [ "$selected" == 4 ]; then
 							screenid="reset"
 						else
 							((screenid++))
@@ -465,19 +503,19 @@ getinput() {
 					fi
 				fi
 			fi
-		elif [ $screenid == patch ]; then
-			if [ ${OMM_PATCHES_ENABLED[$(expr $selected - 1)]} == 0 ]; then
-				OMM_PATCHES_ENABLED[$(expr $selected - 1)]="1"
+		elif [ "$screenid" == patch ]; then
+			if [ "${OMM_PATCHES_ENABLED[$((selected - 1))]}" == 0 ]; then
+				OMM_PATCHES_ENABLED[$((selected - 1))]="1"
 			else
-				OMM_PATCHES_ENABLED[$(expr $selected - 1)]="0"
+				OMM_PATCHES_ENABLED[$((selected - 1))]="0"
 			fi
 		else
-			if [ $cant == 0 ] || [ h$cant == h ]; then
-				if [ $screenid == 2 ]; then
-					if [ $selected == 5 ]; then
+			if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
+				if [ "$screenid" == 2 ]; then
+					if [ "$selected" == 5 ]; then
 						clear
 						echo "--- Deleting ${NAME}..."
-						rm -rf repos/${ABBR}
+						rm -rf repos/"${ABBR}"
 						echo "Done."
 						echo -e "\e[?25h\033[A"
 						stty echo
@@ -490,24 +528,24 @@ getinput() {
 				fi
 			fi
 		fi
-	elif [ $screenid == 0 ]; then
+	elif [ "$screenid" == 0 ]; then
 		echo -e "\e[?25h\033[A"
 		stty echo
 		clear
 		exit
 	elif [[ "${OMM_BUILDER_GUI_KEY_DIGIT}" == *"$1"* ]]; then
-		if [ $screenid == 1 ]; then
-			if [ $1 -lt 8 ]; then
+		if [ "$screenid" == 1 ]; then
+			if [ "$1" -lt 8 ]; then
 				selected=$1
 				((screenid++))
 			fi
-		elif [ $screenid == 2 ]; then
-			if [ $1 -lt 6 ]; then
+		elif [ "$screenid" == 2 ]; then
+			if [ "$1" -lt 6 ]; then
 				selected=$1
 				((screenid++))
 			fi
-		elif [ $screenid == 3 ]; then
-			if [ $1 == 1 ]; then
+		elif [ "$screenid" == 3 ]; then
+			if [ "$1" == 1 ]; then
 				if [ $lra -lt 4 ]; then
 					((lra++))
 					echologo
@@ -551,7 +589,7 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $1 == 2 ]; then
+			elif [ "$1" == 2 ]; then
 				if [ $lrb -lt 2 ]; then
 					((lrb++))
 					echologo
@@ -595,7 +633,7 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $1 == 3 ]; then
+			elif [ "$1" == 3 ]; then
 				if [ $lrc -lt 2 ]; then
 					((lrc++))
 				else
@@ -603,18 +641,18 @@ getinput() {
 				fi
 			else
 				selected=$1
-				if [ $1 == 9 ]; then
-					screenid=make
-				elif [ $1 == 4 ]; then
-					screenid=patch
+				if [ "$1" == 9 ]; then
+					screenid="make"
+				elif [ "$1" == 4 ]; then
+					screenid="patch"
 				else
 					((screenid++))
 				fi
 			fi
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_LEFT}" == *"$1"* ]]; then
-		if [ $screenid == 3 ]; then
-			if [ $selected == 1 ]; then
+		if [ "$screenid" == 3 ]; then
+			if [ "$selected" == 1 ]; then
 				if [ $lra -gt 1 ]; then
 					((lra--))
 					echologo
@@ -658,7 +696,7 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $selected == 2 ]; then
+			elif [ "$selected" == 2 ]; then
 				if [ $lrb -gt 1 ]; then
 					((lrb--))
 					echologo
@@ -702,19 +740,19 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $selected == 3 ]; then
+			elif [ "$selected" == 3 ]; then
 				if [ $lrc -gt 1 ]; then
 					((lrc--))
 				fi
 			fi
-		elif [ $screenid == patch ]; then
-			if [ ${OMM_PATCHES_ENABLED[$(expr $selected - 1)]} == 1 ]; then
-				OMM_PATCHES_ENABLED[$(expr $selected - 1)]="0"
+		elif [ "$screenid" == patch ]; then
+			if [ ${OMM_PATCHES_ENABLED[$((selected - 1))]} == 1 ]; then
+				OMM_PATCHES_ENABLED[$((selected - 1))]="0"
 			fi
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_RIGHT}" == *"$1"* ]]; then
-		if [ $screenid == 3 ]; then
-			if [ $selected == 1 ]; then
+		if [ "$screenid" == 3 ]; then
+			if [ "$selected" == 1 ]; then
 				if [ $lra -lt 4 ]; then
 					((lra++))
 					echologo
@@ -758,7 +796,7 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $selected == 2 ]; then
+			elif [ "$selected" == 2 ]; then
 				if [ $lrb -lt 2 ]; then
 					((lrb++))
 					echologo
@@ -802,14 +840,14 @@ getinput() {
 					echo
 					echo
 				fi
-			elif [ $selected == 3 ]; then
+			elif [ "$selected" == 3 ]; then
 				if [ $lrc -lt 2 ]; then
 					((lrc++))
 				fi
 			fi
-		elif [ $screenid == patch ]; then
-			if [ ${OMM_PATCHES_ENABLED[$(expr $selected - 1)]} == 0 ]; then
-				OMM_PATCHES_ENABLED[$(expr $selected - 1)]="1"
+		elif [ "$screenid" == patch ]; then
+			if [ ${OMM_PATCHES_ENABLED[$((selected - 1))]} == 0 ]; then
+				OMM_PATCHES_ENABLED[$((selected - 1))]="1"
 			fi
 		fi
 	fi
@@ -820,13 +858,13 @@ getinput() {
 #
 
 getcustom() {
-	cd custom
+	cd custom || exit
 	if [ -f patches ]; then
 		rm patches
 	fi
-	echo >>patches "$(find *.patch 2>/dev/null)"
+	find ./*.patch 2>/dev/null >>patches
 	patchcount=$(sed -n '$=' patches)
-	if [ $patchcount -gt 15 ]; then
+	if [ "$patchcount" -gt 15 ]; then
 		rm patches
 		raise_error "Amount of patches in the custom directory is limited to 15 so far. Please remove some."
 	fi
@@ -834,16 +872,16 @@ getcustom() {
 	i=0
 	while :; do
 		((i++))
-		if [ $i -gt $(sed -n '$=' patches) ]; then
+		if [ "$i" -gt "$(sed -n '$=' patches)" ]; then
 			break
 		fi
-		OMM_PATCHES_LIST+=("$(sed $i'!d' patches)")
+		OMM_PATCHES_LIST+=("$(sed "$i"'!d' patches)")
 	done
 	OMM_PATCHES_ENABLED=()
 	i=0
 	while :; do
 		((i++))
-		if [ $i -gt $(sed -n '$=' patches) ]; then
+		if [ "$i" -gt "$(sed -n '$=' patches)" ]; then
 			break
 		fi
 		OMM_PATCHES_ENABLED+=("0")
@@ -852,7 +890,7 @@ getcustom() {
 	if [ -f list ]; then
 		rm list
 	fi
-	echo >>list "$(ls -1d */)"
+	ls -1d ./*/ >>list
 	i=0
 	tpc=0
 	spc=0
@@ -861,8 +899,8 @@ getcustom() {
 		if [ "$i" -gt "$(sed -n '$=' list)" ]; then
 			break
 		fi
-		line=$(sed $i'!d' list)
-		cd $line
+		line=$(sed "$i"'!d' list)
+		cd "$line" || exit
 		if [ -d gfx ]; then
 			((tpc++))
 		elif [ -f sound/sound_data.tbl ]; then
@@ -876,11 +914,11 @@ getcustom() {
 	lc=0
 	while :; do
 		((i++))
-		if [ $i -gt $patchcount ]; then
+		if [ "$i" -gt "$patchcount" ]; then
 			break
 		fi
-		charcount=$(expr $(echo ${OMM_PATCHES_LIST[$(expr $i - 1)]} | wc -m) - 1)
-		if [ $charcount -gt $lc ]; then
+		charcount=$((${#OMM_PATCHES_LIST[$((i - 1))]} - 1))
+		if [ "$charcount" -gt $lc ]; then
 			lc=$charcount
 		fi
 	done
@@ -889,7 +927,7 @@ getcustom() {
 	i=0
 	while :; do
 		((i++))
-		if [ $i -gt $lc ]; then
+		if [ "$i" -gt "$lc" ]; then
 			break
 		fi
 		lines+=" "
@@ -898,12 +936,12 @@ getcustom() {
 	lines+="        ${FMT_RESET}${COL_BLACK}${OMM_DYNOS_TOGGLE_S2[0]}"
 	lineus+="        ${FMT_RESET}${OMM_DYNOS_TOGGLE_UNS2[0]}"
 	real=$(echo -e "$lines")
-	lc="$(expr 118 - $(expr ${#real} - 36))"
+	lc="$((118 - $((${#real} - 36))))"
 	lc2="$lc"
 	i=0
 	while :; do
 		((i++))
-		if [ $i -gt $lc ]; then
+		if [ "$i" -gt "$lc" ]; then
 			break
 		fi
 		lines+=" "
@@ -911,7 +949,7 @@ getcustom() {
 	i=0
 	while :; do
 		((i++))
-		if [ $i -gt $lc2 ]; then
+		if [ "$i" -gt "$lc2" ]; then
 			break
 		fi
 		lineus+=" "
@@ -919,39 +957,37 @@ getcustom() {
 	lines+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
 	lineus+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
 	selected=0
-	parr=()
 	while :; do
 		((selected++))
-		if [ $selected -gt $patchcount ]; then
+		if [ "$selected" -gt "$patchcount" ]; then
 			break
 		fi
 		i=0
-
 		while :; do
 			((i++))
-			if [ $i -gt $patchcount ]; then
+			if [ "$i" -gt "$patchcount" ]; then
 				break
 			fi
 			pte=
 			pte2=
-			if [ $i == 1 ]; then
+			if [ "$i" == 1 ]; then
 				pte+="\033[16A\r"
 				pte2+="\033[16A\r"
 			fi
 			pte+="${lines}\033[2C"
-			pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_PATCHES_LIST[$((i - 1))]}${FMT_RESET}"
 			parrs+=("${pte}")
 			pte2+="${lineus}\033[2C"
-			pte2+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			pte2+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_PATCHES_LIST[$((i - 1))]}${FMT_RESET}"
 			parrus+=("${pte2}")
 		done
 		pomle=
 		pte=
-		j="$(expr 16 - $i)"
+		j="$((16 - i))"
 		i=0
 		while :; do
 			((i++))
-			if [ $i -gt $j ]; then
+			if [ "$i" -gt "$j" ]; then
 				break
 			fi
 			pte+="\n ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
@@ -962,11 +998,11 @@ getcustom() {
 	lc=0
 	while :; do
 		((i++))
-		if [ $i -gt $patchcount ]; then
+		if [ "$i" -gt "$patchcount" ]; then
 			break
 		fi
-		charcount=$(expr $(echo ${OMM_PATCHES_LIST[$(expr $i - 1)]} | wc -m) - 1)
-		if [ $charcount -gt $lc ]; then
+		charcount=$((${#OMM_PATCHES_LIST[$((i - 1))]} - 1))
+		if [ "$charcount" -gt $lc ]; then
 			lc=$charcount
 		fi
 	done
@@ -975,7 +1011,7 @@ getcustom() {
 	i=0
 	while :; do
 		((i++))
-		if [ $i -gt $lc ]; then
+		if [ "$i" -gt "$lc" ]; then
 			break
 		fi
 		lines+=" "
@@ -984,12 +1020,12 @@ getcustom() {
 	lines+="        ${FMT_RESET}${COL_BLACK}${OMM_DYNOS_TOGGLE_S2[1]}"
 	lineus+="        ${FMT_RESET}${OMM_DYNOS_TOGGLE_UNS2[1]}"
 	real=$(echo -e "$lines")
-	lc="$(expr 118 - $(expr ${#real} - 36))"
+	lc="$((118 - $((${#real} - 36))))"
 	lc2="$lc"
 	i=0
 	while :; do
 		((i++))
-		if [ $i -gt $lc ]; then
+		if [ "$i" -gt "$lc" ]; then
 			break
 		fi
 		lines+=" "
@@ -997,7 +1033,7 @@ getcustom() {
 	i=0
 	while :; do
 		((i++))
-		if [ $i -gt $lc2 ]; then
+		if [ "$i" -gt "$lc2" ]; then
 			break
 		fi
 		lineus+=" "
@@ -1005,38 +1041,37 @@ getcustom() {
 	lines+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
 	lineus+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
 	selected=0
-	parrte=()
 	while :; do
 		((selected++))
-		if [ $selected -gt $patchcount ]; then
+		if [ "$selected" -gt "$patchcount" ]; then
 			break
 		fi
 		i=0
 		while :; do
 			((i++))
-			if [ $i -gt $patchcount ]; then
+			if [ "$i" -gt "$patchcount" ]; then
 				break
 			fi
 			pte=
 			pte2=
-			if [ $i == 1 ]; then
+			if [ "$i" == 1 ]; then
 				pte+="\033[16A\r"
 				pte2+="\033[16A\r"
 			fi
 			pte+="${lines}\033[2C"
-			pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_PATCHES_LIST[$((i - 1))]}${FMT_RESET}"
 			parrtes+=("${pte}")
 			pte2+="${lineus}\033[2C"
-			pte2+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_PATCHES_LIST[$(expr $i - 1)]}${FMT_RESET}"
+			pte2+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_PATCHES_LIST[$((i - 1))]}${FMT_RESET}"
 			parrteus+=("${pte2}")
 		done
 		pomle=
 		pte=
-		j="$(expr 16 - $i)"
+		j="$((16 - i))"
 		i=0
 		while :; do
 			((i++))
-			if [ $i -gt $j ]; then
+			if [ "$i" -gt "$j" ]; then
 				break
 			fi
 			pte+="\n ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
@@ -1050,6 +1085,7 @@ dependcheck
 OMM_PATCH_VERSION="7.3.2"
 OMM_SH_LOCAL_VERSION="1.0.4" # Local version
 OMM_PATCH_DIRNAME="omm.7.3.2.3"
+outdate=0
 
 #
 # Check version
@@ -1061,79 +1097,122 @@ if ! [[ "$args" == *"--no-version-check"* ]]; then
 	if [ -f omm.version ]; then
 		rm omm.version
 	fi
-	wget --no-check-certificate --no-cache --no-cookies "${OMM_VERSION_URL}" -O omm.version -q
-	line=$(sed '35!d' omm.version)
-	b=0
-	while :; do
+	wget --no-check-certificate --no-cache --no-cookies "${OMM_VERSION_URL}" -O omm.version -q || rm -f omm.version
+	if [ -f omm.version ]; then
+		line=$(sed '35!d' omm.version)
+		b=0
+		while :; do
+			((b++))
+			char=${line:$b:1}
+			if [ "$char" == "=" ]; then
+				break
+			fi
+		done
 		((b++))
-		char=${line:$b:1}
-		if [ "$char" == "=" ]; then
-			break
-		fi
-	done
-	((b++))
-	while :; do
+		while :; do
+			((b++))
+			char=${line:$b:1}
+			if [ "h$char" == "h" ]; then
+				break
+			fi
+			OMM_SH_VERSION+=$char
+		done
+		line=$(sed '36!d' omm.version)
+		b=0
+		while :; do
+			((b++))
+			char=${line:$b:1}
+			if [ "$char" == "=" ]; then
+				break
+			fi
+		done
 		((b++))
-		char=${line:$b:1}
-		if [ "h$char" == "h" ]; then
-			break
+		while :; do
+			((b++))
+			char=${line:$b:1}
+			if [ "h$char" == "h" ]; then
+				break
+			fi
+			OMM_PATCH_REVISION+=$char
+		done
+		if ! [ "${OMM_PATCH_DIRNAME}" == "omm.${OMM_PATCH_VERSION}.${OMM_PATCH_REVISION}" ]; then
+			outdate=1
 		fi
-		OMM_SH_VERSION+=$char
-	done
-	line=$(sed '36!d' omm.version)
-	b=0
-	while :; do
-		((b++))
-		char=${line:$b:1}
-		if [ "$char" == "=" ]; then
-			break
-		fi
-	done
-	((b++))
-	while :; do
-		((b++))
-		char=${line:$b:1}
-		if [ "h$char" == "h" ]; then
-			break
-		fi
-		OMM_PATCH_REVISION+=$char
-	done
-	if ! [ "$OMM_SH_LOCAL_VERSION" == "$OMM_SH_VERSION" ]; then
-		echo "Your OMM builder is not up-to-date."
-		read -sn 1 -p "Do you want to download and install the latest version? [y/n] " inp
-		if [ "h$inp" == hy ] || [ "h$inp" == hY ]; then
-			echo "Updating OMM builder..."
-			git config pull.rebase true
-			git checkout master -q
-			git pull -q
-			rm -rf custom
-			echo "Done."
-			OMM_SH_LOCAL_VERSION=$OMM_SH_VERSION
+		OMM_PATCH_DIRNAME="omm.${OMM_PATCH_VERSION}.${OMM_PATCH_REVISION}"
+		echo "Version: ${OMM_PATCH_VERSION}"
+		echo ".sh Version: ${OMM_SH_LOCAL_VERSION}"
+		echo "Revision: ${OMM_PATCH_REVISION}"
+		echo "Directory: ${OMM_PATCH_DIRNAME}"
+		rm omm.version
+	else
+		echo "Unable to retrieve remote OMM version number."
+		echo "Using local OMM patch..."
+		if ! [ -d "${OMM_PATCH_DIRNAME}" ]; then
+			raise_error "Cannot find any OMM patch."
 		fi
 	fi
-	OMM_PATCH_DIRNAME="omm.${OMM_PATCH_VERSION}.${OMM_PATCH_REVISION}"
-	echo "Version: ${OMM_PATCH_VERSION}"
-	echo ".sh Version: ${OMM_SH_LOCAL_VERSION}"
-	echo "Revision: ${OMM_PATCH_REVISION}"
-	echo "Directory: ${OMM_PATCH_DIRNAME}"
-	rm omm.version
 fi
+
+#
+# extract zip files
+#
+
+echo "--- Extracting zip archives..."
+cd custom || exit
+if [ -f archives ]; then
+	rm archives
+fi
+find ./*.7z ./*.zip ./*.gz ./*.tar ./*.rar 2>/dev/null >>archives
+i=0
+if ! [ "h$(cat archives)" == "h" ]; then
+	while :; do
+		((i++))
+		line="$(sed "$i"'!d' archives)"
+		if [ "$i" -gt "$(sed -n '$=' archives)" ] || [ "h$line" == "h" ]; then
+			break
+		fi
+		j=0
+		charc=
+		while :; do
+			((j++))
+			charc+=${line:$((j - 1)):1}
+			if [ "${line:$j:1}" == "." ]; then
+				break
+			fi
+		done
+		if ! [ -d "$charc" ]; then
+			7z x "$line" -o"$charc" >/dev/null 2>&1
+		fi
+	done
+fi
+rm archives
+cd ../
+
+#
+# Run the script to get the custom assets/patches
+#
+
 echo "--- Initializing..."
 getcustom
 stty -echo            # Makes it so when you type it doesn't display the characters
 printf '\e[8;27;120t' # resize to 27 rows and 120 cols
 clear
 screenid=1
+
+#
+# Outputs the OMM.sh logo.
+#
+
 echologo() {
 	e1="                                                 "
 	e2="                                                 "
 	e3="                                                 "
 	if ! [ $screenid == 1 ]; then
-		e1="  ${COL_LYELLOW}Game Name${COL_WHITE}${MENU_GAME_NAMES[$(expr $NAMEN - 1)]}"
+		e1="  ${COL_LYELLOW}Game Name${COL_WHITE}${MENU_GAME_NAMES[$((NAMEN - 1))]}"
 	fi
 	if [ $screenid == 3 ] || [ "$screenid" == "patch" ]; then
-		e2="  ${COL_LYELLOW}Build Speed${COL_WHITE}${MENU_SPEEDS[$(expr $lra - 1)]}"
-		e3="  ${COL_LYELLOW}Render API${COL_WHITE}${MENU_API[$(expr $lrb - 1)]}"
+		e2="  ${COL_LYELLOW}Build Speed${COL_WHITE}${MENU_SPEEDS[$((lra - 1))]}"
+		e3="  ${COL_LYELLOW}Render API${COL_WHITE}${MENU_API[$((lrb - 1))]}"
 	fi
 	clear
 	echo
@@ -1223,12 +1302,12 @@ menu() {
 			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
 			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
 			echo -e "                                                                                                                        \033[A"
-			read -sn 1 -p "${OMM_REPO_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
-			getinput $MENU_INPUT
-			ABBR="${OMM_REPO_ABBR[$(expr $selected - 1)]}"
-			NAME="${OMM_REPO_NAMES[$(expr $selected - 1)]}"
-			REPO="${GAME_REPOS[$(expr $selected - 1)]}"
-			COMMIT="${GAME_COMMITS[$(expr $selected - 1)]}"
+			read -rsn 1 -p "${OMM_REPO_DESCRIPTIONS[$((selected - 1))]}" MENU_INPUT
+			getinput "$MENU_INPUT"
+			ABBR="${OMM_REPO_ABBR[$((selected - 1))]}"
+			NAME="${OMM_REPO_NAMES[$((selected - 1))]}"
+			REPO="${GAME_REPOS[$((selected - 1))]}"
+			COMMIT="${GAME_COMMITS[$((selected - 1))]}"
 			NAMEN=$selected
 			if ! [ $screenid == 1 ]; then
 				break
@@ -1257,10 +1336,10 @@ menu() {
 		echo
 		rerr=1
 		if [ -d repos ]; then
-			cd repos
-			if [ -d $ABBR ]; then
+			cd repos || exit
+			if [ -d "$ABBR" ]; then
 				err=0
-				if [ -f $ABBR/build/us_pc/sm64.us.f3dex2e.exe ]; then
+				if [ -f "$ABBR"/build/us_pc/sm64.us.f3dex2e.exe ]; then
 					rerr=0
 				fi
 			else
@@ -1324,7 +1403,7 @@ menu() {
 				else
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<5>  Delete                                                                                                        ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
-				DESC="${OMM_BUILD_DESCRIPTIONS[$(expr $selected - 1)]}"
+				DESC="${OMM_BUILD_DESCRIPTIONS[$((selected - 1))]}"
 			else
 				if [ $selected == 3 ]; then
 					cant=1
@@ -1344,7 +1423,7 @@ menu() {
 				else
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<5>  Delete                                                                                                        ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
-				DESC="${OMM_BUILD_DESCRIPTIONS_ERR[$(expr $selected - 1)]}"
+				DESC="${OMM_BUILD_DESCRIPTIONS_ERR[$((selected - 1))]}"
 			fi
 			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
 			echo -e " ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
@@ -1362,34 +1441,34 @@ menu() {
 				if [ $rerr == 1 ]; then
 					DESC="  ${COL_RED}Cannot run $NAME. The game must be built first.${COL_DEFAULT}"
 					echo -e "${DESC}\033[A"
-					read -sn 1 MENU_INPUT
+					read -rsn 1 MENU_INPUT
 				else
-					read -sn 1 -ep "${OMM_BUILD_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
+					read -rsn 1 -ep "${OMM_BUILD_DESCRIPTIONS[$((selected - 1))]}" MENU_INPUT
 				fi
 			else
 				if [ "$DESC" == "PBE2" ]; then
 					DESC="  ${COL_RED}Cannot run $NAME. The game must be built first.${COL_DEFAULT}"
 					echo -e "${DESC}\033[A"
-					read -sn 1 MENU_INPUT
+					read -rsn 1 MENU_INPUT
 				elif [ "$DESC" == "PBE" ]; then
 					DESC="  ${COL_RED}The directory '$ABBR' does not exist. Build $NAME to create it.${COL_DEFAULT}"
 					echo -e "${DESC}\033[A"
-					read -sn 1 MENU_INPUT
+					read -rsn 1 MENU_INPUT
 				else
 					if [ $selected == 1 ]; then
 						if ! [ -f baserom.us.z64 ]; then
 							DESC="  ${COL_RED}Cannot build ${NAME} without the original Super Mario 64 US rom.${COL_DEFAULT}"
 							echo -e "${DESC}\033[A"
-							read -sn 1 MENU_INPUT
+							read -rsn 1 MENU_INPUT
 						else
-							read -sn 1 -p "${OMM_BUILD_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
+							read -rsn 1 -p "${OMM_BUILD_DESCRIPTIONS[$((selected - 1))]}" MENU_INPUT
 						fi
 					else
-						read -sn 1 -p "${OMM_BUILD_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
+						read -rsn 1 -p "${OMM_BUILD_DESCRIPTIONS[$((selected - 1))]}" MENU_INPUT
 					fi
 				fi
 			fi
-			getinput $MENU_INPUT
+			getinput "$MENU_INPUT"
 			if ! [ $screenid == 2 ]; then
 				break
 			fi
@@ -1400,10 +1479,10 @@ menu() {
 		enabled=0
 		while :; do
 			((i++))
-			if [ $i -gt $j ]; then
+			if [ "$i" -gt $j ]; then
 				break
 			fi
-			item="${OMM_PATCHES_ENABLED[$(expr $i - 1)]}"
+			item="${OMM_PATCHES_ENABLED[$((i - 1))]}"
 			if [ $item == 1 ]; then
 				((enabled++))
 			fi
@@ -1434,22 +1513,22 @@ menu() {
 		while :; do
 			cant=0
 			if [ $selected == 1 ]; then
-				echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<1>  Build Speed          ${BGC_WHITE}${OMM_BUILD_SPEEDS[$(expr $lra - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<1>  Build Speed          ${BGC_WHITE}${OMM_BUILD_SPEEDS[$((lra - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			else
-				echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<1>  Build Speed          ${COL_DEFAULT}${OMM_BUILD_SPEEDS_U[$(expr $lra - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				echo -e "\033[16A\r ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<1>  Build Speed          ${COL_DEFAULT}${OMM_BUILD_SPEEDS_U[$((lra - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			fi
 			if [ $selected == 2 ]; then
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<2>  Render API           ${BGC_WHITE}${OMM_RENDER_API_S[$(expr $lrb - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<2>  Render API           ${BGC_WHITE}${OMM_RENDER_API_S[$((lrb - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			else
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<2>  Render API           ${COL_DEFAULT}${OMM_RENDER_API_UNS[$(expr $lrb - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<2>  Render API           ${COL_DEFAULT}${OMM_RENDER_API_UNS[$((lrb - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			fi
 			if [ $selected == 3 ]; then
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<3>  DynOS                ${OMM_DYNOS_TOGGLE_S[$(expr $lrc - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<3>  DynOS                ${OMM_DYNOS_TOGGLE_S[$((lrc - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			else
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<3>  DynOS                ${OMM_DYNOS_TOGGLE_UNS[$(expr $lrc - 1)]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<3>  DynOS                ${OMM_DYNOS_TOGGLE_UNS[$((lrc - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			fi
 			patchcant=0
-			if [ $patchcount -gt 0 ]; then
+			if [ "$patchcount" -gt 0 ]; then
 				if [ $selected == 4 ]; then
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<4>  Patches              ${enabled}/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				else
@@ -1502,11 +1581,11 @@ menu() {
 			echo -e "                                                                                                                        \033[A"
 			if [ $patchcant == 1 ]; then
 				echo -e "${COL_RED}  There is no available element in Patches.${COL_DEFAULT}\033[A"
-				read -sn 1 MENU_INPUT
+				read -rsn 1 MENU_INPUT
 			else
-				read -sn 1 -p "${OMM_OPTIONS_DESCRIPTIONS[$(expr $selected - 1)]}" MENU_INPUT
+				read -rsn 1 -p "${OMM_OPTIONS_DESCRIPTIONS[$((selected - 1))]}" MENU_INPUT
 			fi
-			getinput $MENU_INPUT
+			getinput "$MENU_INPUT"
 			if ! [ $screenid == 3 ]; then
 				break
 			fi
@@ -1514,93 +1593,158 @@ menu() {
 	elif [ "$screenid" == "make" ]; then
 		clear
 		echo "--- Building ${NAME}..."
+		echo "--- Checking OMM patch (1/3)..."
 		if ! [[ "$args" == *"-l"* ]]; then
-			echo "--- Getting OMM patch..."
-			rm -rf "${OMM_PATCH_DIRNAME}"
-			git clone -q --single-branch ${OMM_REPOSITORY_URL} ${OMM_PATCH_DIRNAME}
-			if ! [ -d $OMM_PATCH_DIRNAME ]; then
-				raise_error "Cannot clone the git repository: ${OMM_REPOSITORY_URL}"
+			if ! [ $outdate == 0 ]; then
+				echo "Removing old OMM patches..."
+				ls -1d ./*/ >>lsist
+				i=0
+				while :; do
+					((i++))
+					line=$(sed "$i"'!d' lsist)
+					if [ "$i" -gt "$(sed -n '$=' lsist)" ]; then
+						break
+					fi
+					if [[ $line == *"omm."* ]]; then
+						rm -rf "$line"
+					fi
+				done
+				echo "Creating ${OMM_PATCH_DIRNAME} from the latest version..."
+				git clone -q --single-branch "${OMM_REPOSITORY_URL}" "${OMM_PATCH_DIRNAME}"
+				if ! [ -d "$OMM_PATCH_DIRNAME" ]; then
+					raise_error "Cannot clone the git repository: ${OMM_REPOSITORY_URL}"
+				fi
+			elif ! [ -d "${OMM_PATCH_DIRNAME}" ]; then
+				echo "Removing old OMM patches..."
+				ls -1d ./*/ >>lsist
+				i=0
+				while :; do
+					((i++))
+					line=$(sed "$i"'!d' lsist)
+					if [ "$i" -gt "$(sed -n '$=' lsist)" ]; then
+						break
+					fi
+					if [[ $line == *"omm."* ]]; then
+						rm -rf "$line"
+					fi
+				done
+				echo "Creating ${OMM_PATCH_DIRNAME} from the latest version..."
+				git clone -q --single-branch "${OMM_REPOSITORY_URL}" "${OMM_PATCH_DIRNAME}"
+				if ! [ -d "$OMM_PATCH_DIRNAME" ]; then
+					raise_error "Cannot clone the git repository: ${OMM_REPOSITORY_URL}"
+				fi
 			fi
 		else
 			echo "--- Using local OMM patch..."
-			if ! [ -d ${OMM_PATCH_DIRNAME} ]; then
+			if ! [ -d "${OMM_PATCH_DIRNAME}" ]; then
 				raise_error "No OMM patch available."
 			fi
 		fi
+		echo "--- Checking OMM patch (2/3)..."
+		rm -rf "${OMM_PATCH_DIRNAME}"/.git
+		rm -rf "${OMM_PATCH_DIRNAME}"/.github
+		rm -rf "${OMM_PATCH_DIRNAME}"/.vscode
+		cd "${OMM_PATCH_DIRNAME}" || exit
+		if [ -f list ]; then
+			rm list
+		fi
+		ls -1 >>list
+		i=0
+		while :; do
+			((i++))
+			if [ "$i" -gt "$(sed -n '$=' list)" ]; then
+				break
+			fi
+			line=$(sed "$i"'!d' list)
+			if ! [[ "$line" == *"omm"* ]]; then
+				rm -rf "$line"
+			fi
+		done
+		rm list
+		cd ../
 		freshclone=0
-		if ! [ -d repos/${ABBR} ]; then
+		if ! [ -d repos/"${ABBR}" ]; then
 			if ! [ -d repos ]; then
 				mkdir repos
 			fi
 			echo "--- Cloning ${NAME} repository..."
-			git clone --single-branch ${REPO} repos/${ABBR}
-			if ! [ -d repos/${ABBR} ]; then
+			git clone --single-branch "${REPO}" repos/"${ABBR}"
+			if ! [ -d repos/"${ABBR}" ]; then
 				raise_error "Cannot clone the git repository: ${ABBR}"
 			fi
 			freshclone=1
 		fi
-		cd repos/${ABBR}
-		if [ $freshclone == 0 ]; then
+		cd repos/"${ABBR}" || exit
+		echo "--- Checking OMM patch (3/3)..."
+		if ! { [ $freshclone == 1 ] && [ -f enhancements/"${OMM_PATCH_DIRNAME}".patched ]; }; then
 			echo "--- Resetting ${NAME}..."
 			git config pull.rebase true
 			git reset -q --hard
 			git clean -q -fdx
 			git pull -q
-			git reset -q --hard ${COMMIT}
+			git reset -q --hard "${COMMIT}"
 		fi
-		git reset -q --hard ${COMMIT}
+		if [ "${NAME}" == "Super Mario 64 Moonshine" ]; then
+			echo >>enhancements/moonshine.patched
+		fi
 		echo "--- Eliminating bad files..."
-		echo >>filelist "$(ls -1)"
+		ls -1 >>filelist
 		i=0
 		while :; do
 			((i++))
-			if [ $i -gt $(sed -n '$=' filelist) ]; then
+			if [ "$i" -gt "$(sed -n '$=' filelist)" ]; then
 				break
 			fi
-			cline=$(sed $i'!d' filelist)
+			cline=$(sed "$i"'!d' filelist)
 			if [[ "$cline" == *".png.png"* ]]; then
-				rm $cline
+				rm "$cline"
 			fi
 		done
 		rm filelist
 		DYNOSARG=
 		if [ $lrc == 2 ]; then
-			DYNOSARG=" dynos "
+			DYNOSARG=" dynos"
 			echo "--- Applying DynOS patch..."
-			wget --no-check-certificate --no-cache --no-cookies ${DYNOS_PATCH_URL} -O dynos.patch -q
-			git apply --reject --whitespace=nowarn "dynos.patch"
-			rm dynos.patch
+			wget --no-check-certificate --no-cache --no-cookies ${DYNOS_PATCH_URL} -O dynos.patch -q || rm -f dynos.patch
+			if [ -f dynos.patch ]; then
+				git apply --reject --whitespace=nowarn "dynos.patch"
+				cd enhancements || exit
+				echo >>"${OMM_PATCH_DIRNAME}".patched
+				cd ../
+				rm dynos.patch
+			fi
 		fi
-		if [ $enabled -gt 0 ]; then
+		if [ "$enabled" -gt 0 ]; then
 			echo "--- Applying patches..."
 			i=0
 			j="${#OMM_PATCHES_ENABLED[@]}"
 			while :; do
 				((i++))
-				if [ $i -gt $j ]; then
+				if [ "$i" -gt $j ]; then
 					break
 				fi
-				item="${OMM_PATCHES_ENABLED[$(expr $i - 1)]}"
-				patch="${OMM_PATCHES_LIST[$(expr $i - 1)]}"
+				item="${OMM_PATCHES_ENABLED[$((i - 1))]}"
+				patch="${OMM_PATCHES_LIST[$((i - 1))]}"
 				if [ $item == 1 ]; then
-					git apply --reject --whitespace=nowarn ../../custom/${patch}
+					git apply --reject --whitespace=nowarn ../../custom/"${patch}"
 				fi
 			done
 		fi
 		echo "--- Applying OMM patch..."
-		cp -rf ../../${OMM_PATCH_DIRNAME}/. .
+		cp -rf ../../"${OMM_PATCH_DIRNAME}"/. .
 		if ! [ -f Makefile ]; then
 			raise_error "Missing Makefile."
 		fi
-		echo "python3 omm_patcher.py -p ${ABBR}"
-		python3 omm_patcher.py -p ${ABBR}
+		echo "python3 omm_patcher.py -p ${ABBR}${DYNOSARG}"
+		python3 omm_patcher.py -p "${ABBR}"
+		echo >>enhancements/"${OMM_PATCH_DIRNAME}".patched
 		echo "--- Building game..."
 		cp -f ../../baserom.us.z64 baserom.us.z64
-		echo "make${OMM_MAKE_SPEEDS[$(expr $lra - 1)]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$(expr $lrb - 1)]}"
-		make${OMM_MAKE_SPEEDS[$(expr $lra - 1)]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$(expr $lrb - 1)]} | tee ../../${ABBR}.logs.txt
+		echo "make${OMM_MAKE_SPEEDS[$((lra - 1))]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$((lrb - 1))]}"
+		make"${OMM_MAKE_SPEEDS[$((lra - 1))]}" OMM_BUILDER=1 VERSION=us "${OMM_MAKE_RAPI[$((lrb - 1))]}" | tee ../../"${ABBR}".logs.txt
 		chmod 755 -f -R ./build/us_pc/res
 		chmod 755 -f -R ./build/us_pc/dynos
-		cd build/us_pc
+		cd build/us_pc || exit
 		run_game
 	elif [ "$screenid" == "patch" ]; then
 		selected=1
@@ -1609,23 +1753,23 @@ menu() {
 			buffer=
 			while :; do
 				((i++))
-				if [ $i -gt $patchcount ]; then
+				if [ "$i" -gt "$patchcount" ]; then
 					break
 				fi
-				if ! [ $i == 1 ]; then
+				if ! [ "$i" == 1 ]; then
 					buffer+="\n"
 				fi
-				if [ ${OMM_PATCHES_ENABLED[$(expr $i - 1)]} == 0 ]; then
-					if [ $selected == $i ]; then
-						buffer+="${parrs[$(expr $i - 1)]}"
+				if [ ${OMM_PATCHES_ENABLED[$((i - 1))]} == 0 ]; then
+					if [ $selected == "$i" ]; then
+						buffer+="${parrs[$((i - 1))]}"
 					else
-						buffer+="${parrus[$(expr $i - 1)]}"
+						buffer+="${parrus[$((i - 1))]}"
 					fi
 				else
-					if [ $selected == $i ]; then
-						buffer+="${parrtes[$(expr $i - 1)]}"
+					if [ $selected == "$i" ]; then
+						buffer+="${parrtes[$((i - 1))]}"
 					else
-						buffer+="${parrteus[$(expr $i - 1)]}"
+						buffer+="${parrteus[$((i - 1))]}"
 					fi
 				fi
 			done
@@ -1651,8 +1795,8 @@ menu() {
 			echo -e "\033[A${pomle}"
 			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
 			echo -e "\033[A"
-			read -sn 1 MENU_INPUT
-			getinput $MENU_INPUT
+			read -rsn 1 MENU_INPUT
+			getinput "$MENU_INPUT"
 			if ! [ $screenid == patch ]; then
 				break
 			fi
@@ -1660,7 +1804,7 @@ menu() {
 	elif [ "$screenid" == "clear" ]; then
 		clear
 		echo "--- Clearing ${NAME} build directory..."
-		rm -rf repos/${ABBR}/build
+		rm -rf repos/"${ABBR}"/build
 		echo "Done."
 		echo -e "\e[?25h\033[A"
 		stty echo
@@ -1672,7 +1816,7 @@ menu() {
 		git reset -q --hard
 		git clean -q -fdx
 		git pull -q
-		git reset -q --hard ${COMMIT}
+		git reset -q --hard "${COMMIT}"
 		echo "Done."
 	else
 		clear
