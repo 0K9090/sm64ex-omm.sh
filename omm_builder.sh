@@ -551,29 +551,7 @@ getinput() {
 					run_game
 				else
 					if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
-						if [ "$screenid" == 2 ]; then
-							if [ "$1" == 5 ]; then
-								clear
-								echo "--- Deleting ${NAME}..."
-								rm -rf repos/"${ABBR}"
-								echo "Done."
-								echo -e "\e[?25h\033[A"
-								stty echo
-								exit
-							elif [ "$1" == 3 ]; then
-								screenid="clear"
-							elif [ "$1" == 4 ]; then
-								screenid="reset"
-							else
-								((screenid++))
-							fi
-						fi
-					fi
-				fi
-			else
-				if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
-					if [ "$screenid" == 2 ]; then
-						if [ "$selected" == 5 ]; then
+						if [ "$1" == 5 ]; then
 							clear
 							echo "--- Deleting ${NAME}..."
 							rm -rf repos/"${ABBR}"
@@ -581,13 +559,29 @@ getinput() {
 							echo -e "\e[?25h\033[A"
 							stty echo
 							exit
-						elif [ "$selected" == 3 ]; then
+						elif [ "$1" == 3 ]; then
 							screenid="clear"
-						elif [ "$selected" == 4 ]; then
+						elif [ "$1" == 4 ]; then
 							screenid="reset"
 						else
 							((screenid++))
 						fi
+					fi
+				fi
+			else
+				if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
+					if [ "$1" == 5 ]; then
+						clear
+						echo "--- Deleting ${NAME}..."
+						rm -rf repos/"${ABBR}"
+						echo "Done."
+						echo -e "\e[?25h\033[A"
+						stty echo
+						exit
+					elif [ "$1" == 3 ]; then
+						screenid="clear"
+					elif [ "$1" == 4 ]; then
+						screenid="reset"
 					else
 						((screenid++))
 					fi
