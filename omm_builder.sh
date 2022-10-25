@@ -1083,7 +1083,7 @@ getcustom() {
 echo -e "\e[?25l\033[A" # Hide cursor
 dependcheck
 OMM_PATCH_VERSION="7.3.2"
-OMM_SH_LOCAL_VERSION="1.0.4" # Local version
+OMM_SH_LOCAL_VERSION="1.0.5" # Local version
 OMM_PATCH_DIRNAME="omm.7.3.2.3"
 outdate=0
 
