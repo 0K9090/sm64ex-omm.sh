@@ -5,7 +5,7 @@ For me, I don't know Python. In fact, if I didnt know the file extension of omm_
 
 ## Devlog
 Format: MM.DD.YY - VERSION
-## 10.24.22 - 1.0.5
+### 10.24.22 - 1.0.5
   - Optimizations that make the menu REALLY fast.
   - Some other stuff
 ### 10.21.22 - 1.0.4
