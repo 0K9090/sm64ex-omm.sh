@@ -6,6 +6,7 @@
 
 basedir=$(dirname "${0//\\//}")
 cd "$basedir" || exit
+stty -echo # Makes it so when you type it doesn't display the characters
 
 #
 # Repo links
@@ -540,15 +541,33 @@ getinput() {
 				((screenid++))
 			fi
 		elif [ "$screenid" == 2 ]; then
-			if [ "$1" -lt 6 ]; then
-				selected=$1
+			if [ "$1" == 1 ]; then
 				((screenid++))
-			fi
-			if ! [ "$rerr" == 1 ]; then
-				if [ "$1" == 2 ]; then
-					cd repos/"$ABBR"/build/us_pc || exit
-					clear
-					run_game
+			else
+				if ! [ "$rerr" == 1 ]; then
+					if [ "$1" == 2 ]; then
+						cd repos/"$ABBR"/build/us_pc || exit
+						clear
+						run_game
+					else
+						if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
+							if [ "$1" == 5 ]; then
+								clear
+								echo "--- Deleting ${NAME}..."
+								rm -rf repos/"${ABBR}"
+								echo "Done."
+								echo -e "\e[?25h\033[A"
+								stty echo
+								exit
+							elif [ "$1" == 3 ]; then
+								screenid="clear"
+							elif [ "$1" == 4 ]; then
+								screenid="reset"
+							else
+								((screenid++))
+							fi
+						fi
+					fi
 				else
 					if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
 						if [ "$1" == 5 ]; then
@@ -566,24 +585,6 @@ getinput() {
 						else
 							((screenid++))
 						fi
-					fi
-				fi
-			else
-				if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
-					if [ "$1" == 5 ]; then
-						clear
-						echo "--- Deleting ${NAME}..."
-						rm -rf repos/"${ABBR}"
-						echo "Done."
-						echo -e "\e[?25h\033[A"
-						stty echo
-						exit
-					elif [ "$1" == 3 ]; then
-						screenid="clear"
-					elif [ "$1" == 4 ]; then
-						screenid="reset"
-					else
-						((screenid++))
 					fi
 				fi
 			fi
@@ -918,7 +919,7 @@ getcustom() {
 		if [ "$i" -gt "$(sed -n '$=' patches)" ]; then
 			break
 		fi
-		OMM_PATCHES_LIST+=("$(sed "$i"'!d' patches)")
+		OMM_PATCHES_LIST+=("$(sed "$i"'!d' patches | sed 's,./,,g')")
 	done
 	OMM_PATCHES_ENABLED=()
 	i=0
@@ -1237,7 +1238,6 @@ cd ../
 
 echo "--- Initializing..."
 getcustom
-stty -echo            # Makes it so when you type it doesn't display the characters
 printf '\e[8;27;120t' # resize to 27 rows and 120 cols
 clear
 screenid=1
@@ -1357,6 +1357,7 @@ menu() {
 			fi
 		done
 	elif [ $screenid == 2 ]; then
+		f=0
 		selected=1
 		echologo
 		echo
@@ -1531,9 +1532,12 @@ menu() {
 			fi
 		done
 		selected=1
-		lra=3
-		lrb=1
-		lrc=1
+		if [ $f == 0 ]; then
+			lra=3
+			lrb=1
+			lrc=1
+			f=1
+		fi
 		echologo
 		echo
 		echo -e "\033[A\r${COL_LCYAN}${FMT_BOLD} +----------------------------------------------------${FMT_RESET}${COL_LCYAN} Build (${COL_DEFAULT}${FMT_BOLD}9${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}-----------------------------------------------------+${FMT_RESET}"
@@ -1691,19 +1695,19 @@ menu() {
 		if [ -f list ]; then
 			rm list
 		fi
-		ls -1 >>list
+		ls -1 >>../list
 		i=0
 		while :; do
 			((i++))
-			if [ "$i" -gt "$(sed -n '$=' list)" ]; then
+			if [ "$i" -gt "$(sed -n '$=' ../list)" ]; then
 				break
 			fi
-			line=$(sed "$i"'!d' list)
+			line=$(sed "$i"'!d' ../list)
 			if ! [[ "$line" == *"omm"* ]]; then
 				rm -rf "$line"
 			fi
 		done
-		rm list
+		rm ../list
 		cd ../
 		freshclone=0
 		if ! [ -d repos/"${ABBR}" ]; then
@@ -1711,7 +1715,7 @@ menu() {
 				mkdir repos
 			fi
 			echo "--- Cloning ${NAME} repository..."
-			git clone --single-branch "${REPO}" repos/"${ABBR}"
+			git clone --single-branch ${REPO} repos/${ABBR}
 			if ! [ -d repos/"${ABBR}" ]; then
 				raise_error "Cannot clone the git repository: ${ABBR}"
 			fi
@@ -1770,6 +1774,7 @@ menu() {
 				patch="${OMM_PATCHES_LIST[$((i - 1))]}"
 				if [ $item == 1 ]; then
 					git apply --reject --whitespace=nowarn ../../custom/"${patch}"
+					cd enhancements || exit
 				fi
 			done
 		fi
@@ -1784,7 +1789,7 @@ menu() {
 		echo "--- Building game..."
 		cp -f ../../baserom.us.z64 baserom.us.z64
 		echo "make${OMM_MAKE_SPEEDS[$((lra - 1))]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$((lrb - 1))]}"
-		make"${OMM_MAKE_SPEEDS[$((lra - 1))]}" OMM_BUILDER=1 VERSION=us "${OMM_MAKE_RAPI[$((lrb - 1))]}" | tee ../../"${ABBR}".logs.txt
+		make${OMM_MAKE_SPEEDS[$((lra - 1))]} OMM_BUILDER=1 VERSION=us ${OMM_MAKE_RAPI[$((lrb - 1))]} | tee ../../"${ABBR}".logs.txt
 		chmod 755 -f -R ./build/us_pc/res
 		chmod 755 -f -R ./build/us_pc/dynos
 		cd build/us_pc || exit
