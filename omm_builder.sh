@@ -544,6 +544,55 @@ getinput() {
 				selected=$1
 				((screenid++))
 			fi
+			if ! [ "$rerr" == 1 ]; then
+				if [ "$1" == 2 ]; then
+					cd repos/"$ABBR"/build/us_pc || exit
+					clear
+					run_game
+				else
+					if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
+						if [ "$screenid" == 2 ]; then
+							if [ "$1" == 5 ]; then
+								clear
+								echo "--- Deleting ${NAME}..."
+								rm -rf repos/"${ABBR}"
+								echo "Done."
+								echo -e "\e[?25h\033[A"
+								stty echo
+								exit
+							elif [ "$1" == 3 ]; then
+								screenid="clear"
+							elif [ "$1" == 4 ]; then
+								screenid="reset"
+							else
+								((screenid++))
+							fi
+						fi
+					fi
+				fi
+			else
+				if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
+					if [ "$screenid" == 2 ]; then
+						if [ "$selected" == 5 ]; then
+							clear
+							echo "--- Deleting ${NAME}..."
+							rm -rf repos/"${ABBR}"
+							echo "Done."
+							echo -e "\e[?25h\033[A"
+							stty echo
+							exit
+						elif [ "$selected" == 3 ]; then
+							screenid="clear"
+						elif [ "$selected" == 4 ]; then
+							screenid="reset"
+						else
+							((screenid++))
+						fi
+					else
+						((screenid++))
+					fi
+				fi
+			fi
 		elif [ "$screenid" == 3 ]; then
 			if [ "$1" == 1 ]; then
 				if [ $lra -lt 4 ]; then
