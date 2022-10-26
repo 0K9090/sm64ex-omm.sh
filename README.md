@@ -5,6 +5,9 @@ For me, I don't know Python. In fact, if I didnt know the file extension of omm_
 
 ## Devlog
 Format: MM.DD.YY - VERSION
+### 10.26.22 - 1.0.6
+  - Working on adding texture packs
+  - Changed some stuff
 ### 10.24.22 - 1.0.5
   - Optimizations that make the menu REALLY fast.
   - Some other stuff
@@ -69,7 +72,7 @@ Ok, I guess that means don't run omm_builder.py. Run omm_builder.sh instead!
 
 - **Linux**:
 
-  - Open a terminal and run the following command to install the required packages:<br>`sudo apt install build-essential git python3 libglew-dev libsdl2-dev zip p7zip*`
+  - Open a terminal and run the following command to install the required packages:<br>`sudo apt install patch build-essential git python3 libglew-dev libsdl2-dev zip p7zip*`
 
   - Install the builder by cloning the *master* branch with this command:<br>`git clone https://github.com/0K9090/sm64ex-omm.sh.git -b master`
 
@@ -117,12 +120,12 @@ Games that can be built with *Odyssey Mario's Moveset*:
 7. - ***Render96***
 
 Some shortcuts (replace `X` by the game's number):
-|||
-|:-|:-|
-| Run a compiled game | `./omm_builder.sh -i X2` |
-| Reset a game's directory | `./omm_builder.sh -i X4` |
-| Build a game with DynOS | `./omm_builder.sh -i X139` |
-| Build a game with DirectX 11 | `./omm_builder.sh -i X129` |
+|                                        |                             |
+| :------------------------------------- | :-------------------------- |
+| Run a compiled game                    | `./omm_builder.sh -i X2`    |
+| Reset a game's directory               | `./omm_builder.sh -i X4`    |
+| Build a game with DynOS                | `./omm_builder.sh -i X139`  |
+| Build a game with DirectX 11           | `./omm_builder.sh -i X129`  |
 | Build a game with DirectX 11 and DynOS | `./omm_builder.sh -i X1239` |
 
 ---
@@ -248,28 +251,28 @@ A PC port exclusivity, the options menu allows the player to configure their gam
 
 ### What are the default keyboard/controller controls?
 
-| | Keyboard (qwerty) | Keyboard (azerty) | XBox One Controller | Switch Pro Controller |
-|:-:|:-:|:-:|:-:|:-:|
-| A Button | <kbd>L</kbd> | <kbd>L</kbd> | <kbd>**A**</kbd> | <kbd>**A**</kbd> |
-| B Button | <kbd>,</kbd> | <kbd>;</kbd> | <kbd>**B**</kbd> | <kbd>**B**</kbd> |
-| X Button | <kbd>K</kbd> | <kbd>K</kbd> | <kbd>**X**</kbd> | <kbd>**X**</kbd> |
-| Y Button | <kbd>M</kbd> | <kbd>,</kbd> | <kbd>**Y**</kbd> | <kbd>**Y**</kbd> |
-| Start Button | <kbd>SPACE</kbd> | <kbd>SPACE</kbd> | <kbd>**Start**</kbd> | <kbd>**+**</kbd> |
-| L Trigger | <kbd>LSHIFT</kbd> | <kbd>LSHIFT</kbd> | <kbd>**LB**</kbd> | <kbd>**L**</kbd> |
-| R Trigger | <kbd>RSHIFT</kbd> | <kbd>RSHIFT</kbd> | <kbd>**RB**</kbd> | <kbd>**R**</kbd> |
-| Z Trigger | <kbd>O</kbd> | <kbd>O</kbd> | <kbd>**RT**</kbd> | <kbd>**ZR**</kbd> |
-| C-Up | <kbd>&uarr;</kbd> | <kbd>&uarr;</kbd> | <kbd>**RS-Up**</kbd> | <kbd>**RS-Up**</kbd> |
-| C-Down | <kbd>&darr;</kbd> | <kbd>&darr;</kbd> | <kbd>**RS-Down**</kbd> | <kbd>**RS-Down**</kbd> |
-| C-Left | <kbd>&larr;</kbd> | <kbd>&larr;</kbd> | <kbd>**RS-Left**</kbd> | <kbd>**RS-Left**</kbd> |
-| C-Right | <kbd>&rarr;</kbd> | <kbd>&rarr;</kbd> | <kbd>**RS-Right**</kbd> | <kbd>**RS-Right**</kbd> |
-| D-Up | <kbd>-</kbd> | <kbd>)</kbd> | <kbd>**D-Up**</kbd> | <kbd>**D-Up**</kbd> |
-| D-Down | <kbd>{</kbd> | <kbd>^</kbd> | <kbd>**D-Down**</kbd> | <kbd>**D-Down**</kbd> |
-| D-Left | <kbd>P</kbd> | <kbd>P</kbd> | <kbd>**D-Left**</kbd> | <kbd>**D-Left**</kbd> |
-| D-Right | <kbd>}</kbd> | <kbd>$</kbd> | <kbd>**D-Right**</kbd> | <kbd>**D-Right**</kbd> |
-| Stick Up | <kbd>W</kbd> | <kbd>Z</kbd> | <kbd>**LS-Up**</kbd> | <kbd>**LS-Up**</kbd> |
-| Stick Down | <kbd>S</kbd> | <kbd>S</kbd> | <kbd>**LS-Down**</kbd> | <kbd>**LS-Down**</kbd> |
-| Stick Left | <kbd>A</kbd> | <kbd>Q</kbd> | <kbd>**LS-Left**</kbd> | <kbd>**LS-Left**</kbd> |
-| Stick Right | <kbd>D</kbd> | <kbd>D</kbd> | <kbd>**LS-Right**</kbd> | <kbd>**LS-Right**</kbd> |
+|              | Keyboard (qwerty) | Keyboard (azerty) |   XBox One Controller   |  Switch Pro Controller  |
+| :----------: | :---------------: | :---------------: | :---------------------: | :---------------------: |
+|   A Button   |   <kbd>L</kbd>    |   <kbd>L</kbd>    |    <kbd>**A**</kbd>     |    <kbd>**A**</kbd>     |
+|   B Button   |   <kbd>,</kbd>    |   <kbd>;</kbd>    |    <kbd>**B**</kbd>     |    <kbd>**B**</kbd>     |
+|   X Button   |   <kbd>K</kbd>    |   <kbd>K</kbd>    |    <kbd>**X**</kbd>     |    <kbd>**X**</kbd>     |
+|   Y Button   |   <kbd>M</kbd>    |   <kbd>,</kbd>    |    <kbd>**Y**</kbd>     |    <kbd>**Y**</kbd>     |
+| Start Button | <kbd>SPACE</kbd>  | <kbd>SPACE</kbd>  |  <kbd>**Start**</kbd>   |    <kbd>**+**</kbd>     |
+|  L Trigger   | <kbd>LSHIFT</kbd> | <kbd>LSHIFT</kbd> |    <kbd>**LB**</kbd>    |    <kbd>**L**</kbd>     |
+|  R Trigger   | <kbd>RSHIFT</kbd> | <kbd>RSHIFT</kbd> |    <kbd>**RB**</kbd>    |    <kbd>**R**</kbd>     |
+|  Z Trigger   |   <kbd>O</kbd>    |   <kbd>O</kbd>    |    <kbd>**RT**</kbd>    |    <kbd>**ZR**</kbd>    |
+|     C-Up     | <kbd>&uarr;</kbd> | <kbd>&uarr;</kbd> |  <kbd>**RS-Up**</kbd>   |  <kbd>**RS-Up**</kbd>   |
+|    C-Down    | <kbd>&darr;</kbd> | <kbd>&darr;</kbd> | <kbd>**RS-Down**</kbd>  | <kbd>**RS-Down**</kbd>  |
+|    C-Left    | <kbd>&larr;</kbd> | <kbd>&larr;</kbd> | <kbd>**RS-Left**</kbd>  | <kbd>**RS-Left**</kbd>  |
+|   C-Right    | <kbd>&rarr;</kbd> | <kbd>&rarr;</kbd> | <kbd>**RS-Right**</kbd> | <kbd>**RS-Right**</kbd> |
+|     D-Up     |   <kbd>-</kbd>    |   <kbd>)</kbd>    |   <kbd>**D-Up**</kbd>   |   <kbd>**D-Up**</kbd>   |
+|    D-Down    |   <kbd>{</kbd>    |   <kbd>^</kbd>    |  <kbd>**D-Down**</kbd>  |  <kbd>**D-Down**</kbd>  |
+|    D-Left    |   <kbd>P</kbd>    |   <kbd>P</kbd>    |  <kbd>**D-Left**</kbd>  |  <kbd>**D-Left**</kbd>  |
+|   D-Right    |   <kbd>}</kbd>    |   <kbd>$</kbd>    | <kbd>**D-Right**</kbd>  | <kbd>**D-Right**</kbd>  |
+|   Stick Up   |   <kbd>W</kbd>    |   <kbd>Z</kbd>    |  <kbd>**LS-Up**</kbd>   |  <kbd>**LS-Up**</kbd>   |
+|  Stick Down  |   <kbd>S</kbd>    |   <kbd>S</kbd>    | <kbd>**LS-Down**</kbd>  | <kbd>**LS-Down**</kbd>  |
+|  Stick Left  |   <kbd>A</kbd>    |   <kbd>Q</kbd>    | <kbd>**LS-Left**</kbd>  | <kbd>**LS-Left**</kbd>  |
+| Stick Right  |   <kbd>D</kbd>    |   <kbd>D</kbd>    | <kbd>**LS-Right**</kbd> | <kbd>**LS-Right**</kbd> |
 
 ### How do I update *OMM Builder*/*Odyssey Mario's Moveset*?
 
@@ -409,14 +412,14 @@ To install it and make it work, follow these steps:
 - Balanced tiny Goombas and huge Goombas move speed and jump height.
 - Re-balanced physics properties per character:
 
-| | Mario | Peach | Luigi | Wario | Peach (Joy) | Peach (Rage) | Peach (Gloom) | Peach (Calm) |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| Ground speed | | | ➕ | ➖ | | ➖➖ | ➕➕ | |
-| Air speed | | | ➖ | ➕ | | ➖➖ | ➕➕ | |
-| Swimming speed | | | ➕ | ➖ | | | | |
-| Jumping height | | ➖ | ➕ | ➖ | | ➖➖ | ➕➕ | ➖ |
-| Gravity | | ➖ | ➖ | ➕ | | ➕➕ | ➖ | ➖ |
-| Sliding accel | | | ➖ | ➕ | | ➕➕ | | |
+|                | Mario | Peach | Luigi | Wario | Peach (Joy) | Peach (Rage) | Peach (Gloom) | Peach (Calm) |
+| :------------: | :---: | :---: | :---: | :---: | :---------: | :----------: | :-----------: | :----------: |
+|  Ground speed  |       |       |   ➕   |   ➖   |             |      ➖➖      |      ➕➕       |              |
+|   Air speed    |       |       |   ➖   |   ➕   |             |      ➖➖      |      ➕➕       |              |
+| Swimming speed |       |       |   ➕   |   ➖   |             |              |               |              |
+| Jumping height |       |   ➖   |   ➕   |   ➖   |             |      ➖➖      |      ➕➕       |      ➖       |
+|    Gravity     |       |   ➖   |   ➖   |   ➕   |             |      ➕➕      |       ➖       |      ➖       |
+| Sliding accel  |       |       |   ➖   |   ➕   |             |      ➕➕      |               |              |
 
 *Multipliers are inverted for captures.*
 
@@ -899,28 +902,28 @@ These animations can be toggled on/off with the option `Super Mario Odyssey Anim
 Controls have been redesigned to be less confusing and to prevent annoying softlocks:
 - Default configuration is given by the table below:
 
-| | Keyboard (qwerty) | Keyboard (azerty) | XBox One Controller | Switch Pro Controller |
-|:-:|:-:|:-:|:-:|:-:|
-| A Button | <kbd>L</kbd> | <kbd>L</kbd> | <kbd>**A**</kbd> | <kbd>**A**</kbd> |
-| B Button | <kbd>,</kbd> | <kbd>;</kbd> | <kbd>**B**</kbd> | <kbd>**B**</kbd> |
-| X Button | <kbd>K</kbd> | <kbd>K</kbd> | <kbd>**X**</kbd> | <kbd>**X**</kbd> |
-| Y Button | <kbd>M</kbd> | <kbd>,</kbd> | <kbd>**Y**</kbd> | <kbd>**Y**</kbd> |
-| Start Button | <kbd>SPACE</kbd> | <kbd>SPACE</kbd> | <kbd>**Start**</kbd> | <kbd>**+**</kbd> |
-| L Trigger | <kbd>LSHIFT</kbd> | <kbd>LSHIFT</kbd> | <kbd>**LB**</kbd> | <kbd>**L**</kbd> |
-| R Trigger | <kbd>RSHIFT</kbd> | <kbd>RSHIFT</kbd> | <kbd>**RB**</kbd> | <kbd>**R**</kbd> |
-| Z Trigger | <kbd>O</kbd> | <kbd>O</kbd> | <kbd>**RT**</kbd> | <kbd>**ZR**</kbd> |
-| C-Up | <kbd>&uarr;</kbd> | <kbd>&uarr;</kbd> | <kbd>**RS-Up**</kbd> | <kbd>**RS-Up**</kbd> |
-| C-Down | <kbd>&darr;</kbd> | <kbd>&darr;</kbd> | <kbd>**RS-Down**</kbd> | <kbd>**RS-Down**</kbd> |
-| C-Left | <kbd>&larr;</kbd> | <kbd>&larr;</kbd> | <kbd>**RS-Left**</kbd> | <kbd>**RS-Left**</kbd> |
-| C-Right | <kbd>&rarr;</kbd> | <kbd>&rarr;</kbd> | <kbd>**RS-Right**</kbd> | <kbd>**RS-Right**</kbd> |
-| D-Up | <kbd>-</kbd> | <kbd>)</kbd> | <kbd>**D-Up**</kbd> | <kbd>**D-Up**</kbd> |
-| D-Down | <kbd>{</kbd> | <kbd>^</kbd> | <kbd>**D-Down**</kbd> | <kbd>**D-Down**</kbd> |
-| D-Left | <kbd>P</kbd> | <kbd>P</kbd> | <kbd>**D-Left**</kbd> | <kbd>**D-Left**</kbd> |
-| D-Right | <kbd>}</kbd> | <kbd>$</kbd> | <kbd>**D-Right**</kbd> | <kbd>**D-Right**</kbd> |
-| Stick Up | <kbd>W</kbd> | <kbd>Z</kbd> | <kbd>**LS-Up**</kbd> | <kbd>**LS-Up**</kbd> |
-| Stick Down | <kbd>S</kbd> | <kbd>S</kbd> | <kbd>**LS-Down**</kbd> | <kbd>**LS-Down**</kbd> |
-| Stick Left | <kbd>A</kbd> | <kbd>Q</kbd> | <kbd>**LS-Left**</kbd> | <kbd>**LS-Left**</kbd> |
-| Stick Right | <kbd>D</kbd> | <kbd>D</kbd> | <kbd>**LS-Right**</kbd> | <kbd>**LS-Right**</kbd> |
+|              | Keyboard (qwerty) | Keyboard (azerty) |   XBox One Controller   |  Switch Pro Controller  |
+| :----------: | :---------------: | :---------------: | :---------------------: | :---------------------: |
+|   A Button   |   <kbd>L</kbd>    |   <kbd>L</kbd>    |    <kbd>**A**</kbd>     |    <kbd>**A**</kbd>     |
+|   B Button   |   <kbd>,</kbd>    |   <kbd>;</kbd>    |    <kbd>**B**</kbd>     |    <kbd>**B**</kbd>     |
+|   X Button   |   <kbd>K</kbd>    |   <kbd>K</kbd>    |    <kbd>**X**</kbd>     |    <kbd>**X**</kbd>     |
+|   Y Button   |   <kbd>M</kbd>    |   <kbd>,</kbd>    |    <kbd>**Y**</kbd>     |    <kbd>**Y**</kbd>     |
+| Start Button | <kbd>SPACE</kbd>  | <kbd>SPACE</kbd>  |  <kbd>**Start**</kbd>   |    <kbd>**+**</kbd>     |
+|  L Trigger   | <kbd>LSHIFT</kbd> | <kbd>LSHIFT</kbd> |    <kbd>**LB**</kbd>    |    <kbd>**L**</kbd>     |
+|  R Trigger   | <kbd>RSHIFT</kbd> | <kbd>RSHIFT</kbd> |    <kbd>**RB**</kbd>    |    <kbd>**R**</kbd>     |
+|  Z Trigger   |   <kbd>O</kbd>    |   <kbd>O</kbd>    |    <kbd>**RT**</kbd>    |    <kbd>**ZR**</kbd>    |
+|     C-Up     | <kbd>&uarr;</kbd> | <kbd>&uarr;</kbd> |  <kbd>**RS-Up**</kbd>   |  <kbd>**RS-Up**</kbd>   |
+|    C-Down    | <kbd>&darr;</kbd> | <kbd>&darr;</kbd> | <kbd>**RS-Down**</kbd>  | <kbd>**RS-Down**</kbd>  |
+|    C-Left    | <kbd>&larr;</kbd> | <kbd>&larr;</kbd> | <kbd>**RS-Left**</kbd>  | <kbd>**RS-Left**</kbd>  |
+|   C-Right    | <kbd>&rarr;</kbd> | <kbd>&rarr;</kbd> | <kbd>**RS-Right**</kbd> | <kbd>**RS-Right**</kbd> |
+|     D-Up     |   <kbd>-</kbd>    |   <kbd>)</kbd>    |   <kbd>**D-Up**</kbd>   |   <kbd>**D-Up**</kbd>   |
+|    D-Down    |   <kbd>{</kbd>    |   <kbd>^</kbd>    |  <kbd>**D-Down**</kbd>  |  <kbd>**D-Down**</kbd>  |
+|    D-Left    |   <kbd>P</kbd>    |   <kbd>P</kbd>    |  <kbd>**D-Left**</kbd>  |  <kbd>**D-Left**</kbd>  |
+|   D-Right    |   <kbd>}</kbd>    |   <kbd>$</kbd>    | <kbd>**D-Right**</kbd>  | <kbd>**D-Right**</kbd>  |
+|   Stick Up   |   <kbd>W</kbd>    |   <kbd>Z</kbd>    |  <kbd>**LS-Up**</kbd>   |  <kbd>**LS-Up**</kbd>   |
+|  Stick Down  |   <kbd>S</kbd>    |   <kbd>S</kbd>    | <kbd>**LS-Down**</kbd>  | <kbd>**LS-Down**</kbd>  |
+|  Stick Left  |   <kbd>A</kbd>    |   <kbd>Q</kbd>    | <kbd>**LS-Left**</kbd>  | <kbd>**LS-Left**</kbd>  |
+| Stick Right  |   <kbd>D</kbd>    |   <kbd>D</kbd>    | <kbd>**LS-Right**</kbd> | <kbd>**LS-Right**</kbd> |
 
 - All binds have been moved and are now in the `Controls` sub-menu, and are saved inside the OMM save file.
 - To reset all binds to their default values (see table above), press the `Reset Controls` button.

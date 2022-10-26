@@ -124,7 +124,7 @@ OMM_PATCH_VERSION=""
 OMM_PATCH_REVISION=""
 OMM_PATCH_DIRNAME=""
 OMM_PATCH_TRUENAME=""
-OMM_SH_VERSION="1.0.4"
+OMM_SH_VERSION="1.0.6"
 
 #
 # Descriptions that you see at the bottom of the screen
@@ -133,7 +133,7 @@ OMM_SH_VERSION="1.0.4"
 OMM_REPO_DESCRIPTIONS=("  PC Port of Super Mario 64 with additional features. DynOS is available as a patch." "  Up-to-date PC Port of Super Mario 64 featuring enhancements and optimizations from HackerSM64." "  PC Port mod developed by TurnFlashed, S4ys and Fito. Features 10 new worlds and a total of 50 Moons." "  PC Port of Lugmillord's rom-hack, Super Mario 74. Features both Normal and Extreme Editions." "  PC Port of Skelux's rom-hack, Super Mario Star Road. Features the 120 main stars and 10 extra stars." "  PC Port of Kampel125's rom-hack, Super Mario 64: The Green Stars. Features 131 unique stars." "  Super Mario 64 with the look of '96 renders. Has DynOS built-in, a new audio system and playable Luigi and Wario.")
 OMM_BUILD_DESCRIPTIONS_ERR=("  Compile the game with some customization." "PBE2" "PBE" "PBE" "PBE")
 OMM_BUILD_DESCRIPTIONS=("  Compile the game with some customization." "  Launch the compiled game." "  Clear the build/us_pc directory." "  Reset the game directory to its initial state, i.e. without patches applied." "  Delete the game directory and all its content.")
-OMM_OPTIONS_DESCRIPTIONS=("  Building process duration. The faster, the more power-consuming." "  Backend used to render the game." "  Patch the latest version of DynOS to enable Model Packs support as well as an enhanced options menu." "  Doesn't work yet." "  Doesn't work yet." "  Currently unavailable." "  Currently unavailable." "  Currently unavailable." "  Compile the game.")
+OMM_OPTIONS_DESCRIPTIONS=("  Building process duration. The faster, the more power-consuming." "  Backend used to render the game." "  Patch the latest version of DynOS to enable Model Packs support as well as an enhanced options menu." "  Game-changing modifications. Not all patches are compatible, so expect errors with some of them." "  Replace the game's original textures by custom ones." "  Currently unavailable." "  Currently unavailable." "  Currently unavailable." "  Compile the game.")
 
 #
 # List of the game and directory names
@@ -146,7 +146,7 @@ OMM_REPO_ABBR=("smex" "xalo" "smms" "sm74" "smsr" "smgs" "r96x")
 # Dependencies
 #
 
-OMM_DEPENDS=("make" "git" "zip" "unzip" "7z" "cc" "gcc" "g++" "cpp")
+OMM_DEPENDS=("make" "git" "zip" "unzip" "7z" "cc" "gcc" "g++" "cpp" "patch")
 
 #
 # Some menu stuff
@@ -237,7 +237,7 @@ dependcheck() {
 	if ! [ "$py_ver" -lt 3900 ]; then
 		raise_error "Python v3.9 or later is required."
 	fi
-	for i in {1..9}; do
+	for i in {1..10}; do
 		cdc="${OMM_DEPENDS[$((i - 1))]}"
 		echo -e "Checking dependency: '$cdc'... \033[A"
 		dcc=${#cdc}
@@ -250,30 +250,9 @@ dependcheck() {
 		fi
 	done
 	if [ $miss == 1 ]; then
-		raise_error "Missing dependency. To fix it:\n[Windows] Download and run the 'OMM Builder Setup Script'.\n[Linux] Run the command 'sudo apt install build-essential git python3 libglew-dev libsdl2-dev zip p7zip*'."
+		raise_error "Missing dependency. To fix it:\n[Windows] Download and run the 'OMM Builder Setup Script'.\n[Linux] Run the command 'sudo apt install patch build-essential git python3 libglew-dev libsdl2-dev zip p7zip*'."
 	fi
 }
-
-#
-# Check builder version
-#
-
-wget --no-check-certificate --no-cache --no-cookies ${OMM_BUILDER_VERSION_URL} -O omm_builder.version -q || rm -f omm_builder.version
-if [ -f omm_builder.version ]; then
-	if ! [ "$(cat omm_builder.sh)" == "$(cat omm_builder.version)" ]; then
-		echo "Your OMM builder is not up-to-date."
-		echo "Do you want to download and install the latest version? [y/n]"
-		read -rsn 1 yn
-		if [ "h$yn" == hy ] || [ "h$yn" == hY ]; then
-			echo "Updating OMM builder..."
-			git config pull.rebase true
-			git checkout master -q
-			git pull -q
-			echo "Done."
-		fi
-	fi
-	rm omm_builder.version
-fi
 
 #
 # Get native executable
@@ -334,9 +313,13 @@ getinput() {
 			if [ "$selected" -lt "$patchcount" ]; then
 				((selected++))
 			fi
+		elif [ "$screenid" == "text" ]; then
+			if [ "$selected" -lt "$textcount" ]; then
+				((selected++))
+			fi
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_BACK}" == *"$1"* ]]; then
-		if [ "$screenid" == "patch" ]; then
+		if [ "$screenid" == "patch" ] || [ "$screenid" == "text" ]; then
 			screenid=3
 		else
 			((screenid--))
@@ -440,7 +423,13 @@ getinput() {
 					lrc=1
 				fi
 			elif [ "$selected" == 4 ]; then
-				screenid="patch"
+				if [ "$patchcount" -gt 0 ]; then
+					screenid="patch"
+				fi
+			elif [ "$selected" == 5 ]; then
+				if [ "$textcount" -gt 0 ]; then
+					screenid="text"
+				fi
 			else
 				if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
 					((screenid++))
@@ -474,6 +463,10 @@ getinput() {
 							if [ "$selected" == 4 ]; then
 								if ! [ "$patchcount" == 0 ]; then
 									screenid="patch"
+								fi
+							elif [ "$selected" == 5 ]; then
+								if ! [ "$textcount" == 0 ]; then
+									screenid="text"
 								fi
 							fi
 						else
@@ -509,6 +502,12 @@ getinput() {
 				OMM_PATCHES_ENABLED[$((selected - 1))]="1"
 			else
 				OMM_PATCHES_ENABLED[$((selected - 1))]="0"
+			fi
+		elif [ "$screenid" == text ]; then
+			if [ "${OMM_TEXTURES_ENABLED[$((selected - 1))]}" == 0 ]; then
+				OMM_TEXTURES_ENABLED[$((selected - 1))]="1"
+			else
+				OMM_TEXTURES_ENABLED[$((selected - 1))]="0"
 			fi
 		else
 			if [ "$cant" == 0 ] || [ h"$cant" == h ]; then
@@ -684,11 +683,16 @@ getinput() {
 					lrc=1
 				fi
 			else
-				selected=$1
 				if [ "$1" == 9 ]; then
 					screenid="make"
 				elif [ "$1" == 4 ]; then
-					screenid="patch"
+					if [ "$patchcount" -gt 0 ]; then
+						screenid="patch"
+					fi
+				elif [ "$1" == 5 ]; then
+					if [ "$textcount" -gt 0 ]; then
+						screenid="text"
+					fi
 				else
 					((screenid++))
 				fi
@@ -793,6 +797,10 @@ getinput() {
 			if [ ${OMM_PATCHES_ENABLED[$((selected - 1))]} == 1 ]; then
 				OMM_PATCHES_ENABLED[$((selected - 1))]="0"
 			fi
+		elif [ "$screenid" == text ]; then
+			if [ ${OMM_TEXTURES_ENABLED[$((selected - 1))]} == 1 ]; then
+				OMM_TEXTURES_ENABLED[$((selected - 1))]="0"
+			fi
 		fi
 	elif [[ "${OMM_BUILDER_GUI_KEY_RIGHT}" == *"$1"* ]]; then
 		if [ "$screenid" == 3 ]; then
@@ -893,6 +901,10 @@ getinput() {
 			if [ ${OMM_PATCHES_ENABLED[$((selected - 1))]} == 0 ]; then
 				OMM_PATCHES_ENABLED[$((selected - 1))]="1"
 			fi
+		elif [ "$screenid" == text ]; then
+			if [ ${OMM_TEXTURES_ENABLED[$((selected - 1))]} == 0 ]; then
+				OMM_TEXTURES_ENABLED[$((selected - 1))]="1"
+			fi
 		fi
 	fi
 }
@@ -906,40 +918,65 @@ getcustom() {
 	if [ -f patches ]; then
 		rm patches
 	fi
+	if [ -f textures ]; then
+		rm textures
+	fi
 	find ./*.patch 2>/dev/null >>patches
 	patchcount=$(sed -n '$=' patches)
+	if [ "h$patchcount" == "h" ]; then
+		patchcount=0
+	fi
 	if [ "$patchcount" -gt 15 ]; then
 		rm patches
 		raise_error "Amount of patches in the custom directory is limited to 15 so far. Please remove some."
 	fi
 	OMM_PATCHES_LIST=()
-	i=0
-	while :; do
-		((i++))
-		if [ "$i" -gt "$(sed -n '$=' patches)" ]; then
-			break
-		fi
-		OMM_PATCHES_LIST+=("$(sed "$i"'!d' patches | sed 's,./,,g')")
-	done
 	OMM_PATCHES_ENABLED=()
 	i=0
 	while :; do
 		((i++))
-		if [ "$i" -gt "$(sed -n '$=' patches)" ]; then
+		if [ "$i" -gt "$patchcount" ]; then
 			break
 		fi
+		OMM_PATCHES_LIST+=("$(sed "$i"'!d' patches | sed 's,./,,g')")
 		OMM_PATCHES_ENABLED+=("0")
 	done
 	rm patches
+	ls -1d ./*/ 2>/dev/null >>textures
+	textcount=$(sed -n '$=' textures)
+	if [ "h$textcount" == "h" ]; then
+		textcount=0
+	fi
+	if [ "$textcount" -gt 15 ]; then
+		rm textures
+		raise_error "Amount of textures in the custom directory is limited to 15 so far. Please remove some."
+	fi
+	OMM_TEXTURES_LIST=()
+	OMM_TEXTURES_ENABLED=()
+	i=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$textcount" ]; then
+			break
+		fi
+		if [ -d "$(sed "$i"'!d' textures)/gfx" ]; then
+			OMM_TEXTURES_LIST+=("$(sed "$i"'!d' textures)")
+		fi
+		OMM_TEXTURES_ENABLED+=("0")
+	done
+	rm textures
 	if [ -f list ]; then
 		rm list
 	fi
-	ls -1d ./*/ >>list
+	ls -1d ./*/ 2>/dev/null >>list
 	i=0
 	tpc=0
 	spc=0
 	while :; do
 		((i++))
+		if [ "h$(sed -n '$=' list)" == "h" ]; then
+			break
+		fi
 		if [ "$i" -gt "$(sed -n '$=' list)" ]; then
 			break
 		fi
@@ -954,6 +991,11 @@ getcustom() {
 	done
 	rm list
 	cd ../
+
+	#
+	# Patches
+	#
+
 	i=0 # start generating the patches menu
 	lc=0
 	while :; do
@@ -1122,10 +1164,206 @@ getcustom() {
 		done
 		pomle="${pte}"
 	done
+
+	#
+	# Texture packs
+	#
+
+	i=0
+	lc=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$textcount" ]; then
+			break
+		fi
+		charcount=$((${#OMM_TEXTURES_LIST[$((i - 1))]} - 1))
+		if [ "$charcount" -gt $lc ]; then
+			lc=$charcount
+		fi
+	done
+	lines=" ${COL_LCYAN}${FMT_BOLD}| ${BGC_LCYAN}     "
+	lineus=" ${COL_LCYAN}${FMT_BOLD}|      "
+	i=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$lc" ]; then
+			break
+		fi
+		lines+=" "
+		lineus+=" "
+	done
+	lines+="        ${FMT_RESET}${COL_BLACK}${OMM_DYNOS_TOGGLE_S2[0]}"
+	lineus+="        ${FMT_RESET}${OMM_DYNOS_TOGGLE_UNS2[0]}"
+	real=$(echo -e "$lines")
+	lc="$((118 - $((${#real} - 36))))"
+	lc2="$lc"
+	i=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$lc" ]; then
+			break
+		fi
+		lines+=" "
+	done
+	i=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$lc2" ]; then
+			break
+		fi
+		lineus+=" "
+	done
+	lines+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
+	lineus+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
+	selected=0
+	while :; do
+		((selected++))
+		if [ "$selected" -gt "$textcount" ]; then
+			break
+		fi
+		i=0
+		while :; do
+			((i++))
+			if [ "$i" -gt "$textcount" ]; then
+				break
+			fi
+			pte=
+			pte2=
+			if [ "$i" == 1 ]; then
+				pte+="\033[16A\r"
+				pte2+="\033[16A\r"
+			fi
+			pte+="${lines}\033[2C"
+			pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_TEXTURES_LIST[$((i - 1))]}${FMT_RESET}"
+			parrs2+=("${pte}")
+			pte2+="${lineus}\033[2C"
+			pte2+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_TEXTURES_LIST[$((i - 1))]}${FMT_RESET}"
+			parrus2+=("${pte2}")
+		done
+		pomle2=
+		pte=
+		j="$((16 - i))"
+		i=0
+		while :; do
+			((i++))
+			if [ "$i" -gt "$j" ]; then
+				break
+			fi
+			pte+="\n ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+		done
+		pomle2="${pte}"
+	done
+	i=0
+	lc=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$textcount" ]; then
+			break
+		fi
+		charcount=$((${#OMM_TEXTURES_LIST[$((i - 1))]} - 1))
+		if [ "$charcount" -gt $lc ]; then
+			lc=$charcount
+		fi
+	done
+	lines=" ${COL_LCYAN}${FMT_BOLD}| ${BGC_LCYAN}     "
+	lineus=" ${COL_LCYAN}${FMT_BOLD}|      "
+	i=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$lc" ]; then
+			break
+		fi
+		lines+=" "
+		lineus+=" "
+	done
+	lines+="        ${FMT_RESET}${COL_BLACK}${OMM_DYNOS_TOGGLE_S2[1]}"
+	lineus+="        ${FMT_RESET}${OMM_DYNOS_TOGGLE_UNS2[1]}"
+	real=$(echo -e "$lines")
+	lc="$((118 - $((${#real} - 36))))"
+	lc2="$lc"
+	i=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$lc" ]; then
+			break
+		fi
+		lines+=" "
+	done
+	i=0
+	while :; do
+		((i++))
+		if [ "$i" -gt "$lc2" ]; then
+			break
+		fi
+		lineus+=" "
+	done
+	lines+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
+	lineus+="${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}\033[A"
+	selected=0
+	while :; do
+		((selected++))
+		if [ "$selected" -gt "$textcount" ]; then
+			break
+		fi
+		i=0
+		while :; do
+			((i++))
+			if [ "$i" -gt "$textcount" ]; then
+				break
+			fi
+			pte=
+			pte2=
+			if [ "$i" == 1 ]; then
+				pte+="\033[16A\r"
+				pte2+="\033[16A\r"
+			fi
+			pte+="${lines}\033[2C"
+			pte+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<${i}>  ${OMM_TEXTURES_LIST[$((i - 1))]}${FMT_RESET}"
+			parrtes2+=("${pte}")
+			pte2+="${lineus}\033[2C"
+			pte2+="  ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<${i}>  ${OMM_TEXTURES_LIST[$((i - 1))]}${FMT_RESET}"
+			parrteus2+=("${pte2}")
+		done
+		pomle2=
+		pte=
+		j="$((16 - i))"
+		i=0
+		while :; do
+			((i++))
+			if [ "$i" -gt "$j" ]; then
+				break
+			fi
+			pte+="\n ${COL_LCYAN}${FMT_BOLD}|                                                                                                                    | ${FMT_RESET}"
+		done
+		pomle2="${pte}"
+	done
 }
 
 echo -e "\e[?25l\033[A" # Hide cursor
 dependcheck
+
+#
+# Check builder version
+#
+
+if ! [[ "${args}" == *"--no-version-check"* ]]; then
+	wget --no-check-certificate --no-cache --no-cookies ${OMM_BUILDER_VERSION_URL} -O omm_builder.version -q || rm -f omm_builder.version
+	if [ -f omm_builder.version ]; then
+		if ! [ "$(cat omm_builder.sh)" == "$(cat omm_builder.version)" ]; then
+			echo "Your OMM builder is not up-to-date."
+			echo "Do you want to download and install the latest version? [y/n]"
+			read -rsn 1 yn
+			if [ "h$yn" == hy ] || [ "h$yn" == hY ]; then
+				echo "Updating OMM builder..."
+				git config pull.rebase true
+				git checkout master -q
+				git pull -q
+				echo "Done."
+			fi
+		fi
+		rm omm_builder.version
+	fi
+fi
 OMM_PATCH_VERSION="7.3.2"
 OMM_SH_LOCAL_VERSION="1.0.5" # Local version
 OMM_PATCH_DIRNAME="omm.7.3.2.3"
@@ -1531,6 +1769,19 @@ menu() {
 				((enabled++))
 			fi
 		done
+		j="${#OMM_TEXTURES_ENABLED[@]}"
+		i=0
+		enabledd=0
+		while :; do
+			((i++))
+			if [ "$i" -gt $j ]; then
+				break
+			fi
+			item="${OMM_TEXTURES_ENABLED[$((i - 1))]}"
+			if [ $item == 1 ]; then
+				((enabledd++))
+			fi
+		done
 		selected=1
 		if [ $f == 0 ]; then
 			lra=3
@@ -1569,10 +1820,19 @@ menu() {
 			else
 				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<2>  Render API           ${COL_DEFAULT}${OMM_RENDER_API_UNS[$((lrb - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 			fi
-			if [ $selected == 3 ]; then
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<3>  DynOS                ${OMM_DYNOS_TOGGLE_S[$((lrc - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			if [ "${NAME}" == "Render96" ]; then
+				if [ $selected == 3 ]; then
+					cant=1
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<3>  DynOS                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				else
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<3>  DynOS                                                                                                         ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				fi
 			else
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<3>  DynOS                ${OMM_DYNOS_TOGGLE_UNS[$((lrc - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				if [ $selected == 3 ]; then
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<3>  DynOS                ${OMM_DYNOS_TOGGLE_S[$((lrc - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				else
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<3>  DynOS                ${OMM_DYNOS_TOGGLE_UNS[$((lrc - 1))]}${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				fi
 			fi
 			patchcant=0
 			if [ "$patchcount" -gt 0 ]; then
@@ -1582,7 +1842,7 @@ menu() {
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<4>  Patches              ${enabled}/${patchcount}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
 			else
-				if [ $selected == 2 ]; then
+				if [ $selected == 4 ]; then
 					patchcant=1
 					cant=1
 					echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<4>  Patches                                                                                                       ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
@@ -1590,10 +1850,21 @@ menu() {
 					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<4>  Patches                                                                                                       ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
 				fi
 			fi
-			if [ $selected == 5 ]; then
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<5>  Texture Packs        0/${tpc}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+			textcant=0
+			if [ "$textcount" -gt 0 ]; then
+				if [ $selected == 5 ]; then
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${BGC_LCYAN}${COL_BLACK}<5>  Texture Packs        ${enabledd}/${tpc}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				else
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<5>  Texture Packs        ${enabledd}/${tpc}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				fi
 			else
-				echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_CYAN}<5>  Texture Packs        0/${tpc}                                                                                      ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				if [ $selected == 5 ]; then
+					textcant=1
+					cant=1
+					echo -e " ${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}${FMT_INVERT}${BGC_BLACK}${COL_GRAY}${FMT_BOLD}<5>  Texture Packs                                                                                                 ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				else
+					echo -e " ${COL_LCYAN}${FMT_BOLD}|${FMT_RESET} ${COL_GRAY}<5>  Texture Packs                                                                                                 ${FMT_RESET}${COL_LCYAN}${FMT_BOLD}| ${FMT_RESET}"
+				fi
 			fi
 			if [ $selected == 6 ]; then
 				cant=1
@@ -1629,6 +1900,12 @@ menu() {
 			if [ $patchcant == 1 ]; then
 				echo -e "${COL_RED}  There is no available element in Patches.${COL_DEFAULT}\033[A"
 				read -rsn 1 MENU_INPUT
+			elif [ $textcant == 1 ]; then
+				echo -e "${COL_RED}  There is no available element in Texture Packs.${COL_DEFAULT}\033[A"
+				read -rsn 1 MENU_INPUT
+			elif [ "${NAME}" == "Render96" ] && [ $selected == 3 ]; then
+				echo -e "${COL_RED}  DynOS cannot be patched to Render96.${COL_DEFAULT}\033[A"
+				read -rsn 1 MENU_INPUT
 			else
 				read -rsn 1 -p "${OMM_OPTIONS_DESCRIPTIONS[$((selected - 1))]}" MENU_INPUT
 			fi
@@ -1644,7 +1921,7 @@ menu() {
 		if ! [[ "$args" == *"-l"* ]]; then
 			if ! [ $outdate == 0 ]; then
 				echo "Removing old OMM patches..."
-				ls -1d ./*/ >>lsist
+				ls -1d ./*/ 2>/dev/null >>lsist
 				i=0
 				while :; do
 					((i++))
@@ -1663,7 +1940,7 @@ menu() {
 				fi
 			elif ! [ -d "${OMM_PATCH_DIRNAME}" ]; then
 				echo "Removing old OMM patches..."
-				ls -1d ./*/ >>lsist
+				ls -1d ./*/ 2>/dev/null >>lsist
 				i=0
 				while :; do
 					((i++))
@@ -1692,10 +1969,10 @@ menu() {
 		rm -rf "${OMM_PATCH_DIRNAME}"/.github
 		rm -rf "${OMM_PATCH_DIRNAME}"/.vscode
 		cd "${OMM_PATCH_DIRNAME}" || exit
-		if [ -f list ]; then
-			rm list
+		if [ -f ../list ]; then
+			rm ../list
 		fi
-		ls -1 >>../list
+		ls -a1 >>../list
 		i=0
 		while :; do
 			((i++))
@@ -1703,8 +1980,10 @@ menu() {
 				break
 			fi
 			line=$(sed "$i"'!d' ../list)
-			if ! [[ "$line" == *"omm"* ]]; then
-				rm -rf "$line"
+			if ! [ -d "$line" ]; then
+				if ! [[ "$line" == *"omm"* ]]; then
+					rm -rf "$line"
+				fi
 			fi
 		done
 		rm ../list
@@ -1723,13 +2002,15 @@ menu() {
 		fi
 		cd repos/"${ABBR}" || exit
 		echo "--- Checking OMM patch (3/3)..."
-		if ! { [ $freshclone == 1 ] && [ -f enhancements/"${OMM_PATCH_DIRNAME}".patched ]; }; then
-			echo "--- Resetting ${NAME}..."
-			git config pull.rebase true
-			git reset -q --hard
-			git clean -q -fdx
-			git pull -q
-			git reset -q --hard "${COMMIT}"
+		if [ 1 == 0 ]; then # Here because
+			if ! [ $freshclone == 1 ] && ! [ -f enhancements/"${OMM_PATCH_DIRNAME}".patched ]; then
+				echo "--- Resetting ${NAME}..."
+				git config pull.rebase true
+				git reset -q --hard
+				git clean -q -fdx
+				git pull -q
+				git reset -q --hard "${COMMIT}"
+			fi
 		fi
 		if [ "${NAME}" == "Super Mario 64 Moonshine" ]; then
 			echo >>enhancements/moonshine.patched
@@ -1752,9 +2033,11 @@ menu() {
 		if [ $lrc == 2 ]; then
 			DYNOSARG=" dynos"
 			echo "--- Applying DynOS patch..."
-			wget --no-check-certificate --no-cache --no-cookies ${DYNOS_PATCH_URL} -O dynos.patch -q || rm -f dynos.patch
+			if ! [ -f dynos.patch ]; then
+				wget --no-check-certificate --no-cache --no-cookies ${DYNOS_PATCH_URL} -O dynos.patch -q || rm -f dynos.patch
+			fi
 			if [ -f dynos.patch ]; then
-				git apply --reject --whitespace=nowarn "dynos.patch"
+				patch -p1 -t <"dynos.patch"
 				cd enhancements || exit
 				echo >>"${OMM_PATCH_DIRNAME}".patched
 				cd ../
@@ -1773,8 +2056,10 @@ menu() {
 				item="${OMM_PATCHES_ENABLED[$((i - 1))]}"
 				patch="${OMM_PATCHES_LIST[$((i - 1))]}"
 				if [ $item == 1 ]; then
-					git apply --reject --whitespace=nowarn ../../custom/"${patch}"
+					patch -p1 -t <../../custom/"${patch}"
 					cd enhancements || exit
+					echo >>"${patch}ed"
+					cd ../
 				fi
 			done
 		fi
@@ -1784,7 +2069,7 @@ menu() {
 			raise_error "Missing Makefile."
 		fi
 		echo "python3 omm_patcher.py -p ${ABBR}${DYNOSARG}"
-		python3 omm_patcher.py -p "${ABBR}"
+		python3 omm_patcher.py -p "${ABBR}${DYNOSARG}"
 		echo >>enhancements/"${OMM_PATCH_DIRNAME}".patched
 		echo "--- Building game..."
 		cp -f ../../baserom.us.z64 baserom.us.z64
@@ -1841,6 +2126,61 @@ menu() {
 			echo
 			echo -e "${buffer}"
 			echo -e "\033[A${pomle}"
+			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
+			echo -e "\033[A"
+			read -rsn 1 MENU_INPUT
+			getinput "$MENU_INPUT"
+			if ! [ $screenid == patch ]; then
+				break
+			fi
+		done
+	elif [ "$screenid" == "text" ]; then
+		selected=1
+		while :; do
+			i=0
+			buffer=
+			while :; do
+				((i++))
+				if [ "$i" -gt "$textcount" ]; then
+					break
+				fi
+				if ! [ "$i" == 1 ]; then
+					buffer+="\n"
+				fi
+				if [ ${OMM_TEXTURES_ENABLED[$((i - 1))]} == 0 ]; then
+					if [ $selected == "$i" ]; then
+						buffer+="${parrs2[$((i - 1))]}"
+					else
+						buffer+="${parrus2[$((i - 1))]}"
+					fi
+				else
+					if [ $selected == "$i" ]; then
+						buffer+="${parrtes2[$((i - 1))]}"
+					else
+						buffer+="${parrteus2[$((i - 1))]}"
+					fi
+				fi
+			done
+			echologo
+			echo -e "${COL_LCYAN}${FMT_BOLD} +------------------------------------------------${FMT_RESET}${COL_LCYAN}- Texture Packs (${COL_DEFAULT}${FMT_BOLD}${textcount}${FMT_RESET}${COL_LCYAN}) ${FMT_BOLD}------------------------------------------------+${FMT_RESET}"
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo
+			echo -e "${buffer}"
+			echo -e "\033[A${pomle2}"
 			echo -e "${COL_LCYAN}${FMT_BOLD} +--------------------------------------------------------------------------------------------------------------------+ ${FMT_RESET}"
 			echo -e "\033[A"
 			read -rsn 1 MENU_INPUT
